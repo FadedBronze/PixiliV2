@@ -31,13 +31,17 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
         frame: [
           {
             chunks: [],
+            chunksHistory: [],
             name: "brush",
             strayPixels: new Set(),
+            strayPixelsHistory: [],
           },
           {
             chunks: [],
+            chunksHistory: [],
             name: "layer 1",
-            strayPixels: new Set(["10_15", "10_10", "-10_-15", "-10_-10"]),
+            strayPixels: new Set(),
+            strayPixelsHistory: [],
           },
         ],
         get brushLayer() {

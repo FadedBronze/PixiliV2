@@ -6,7 +6,9 @@ type Chunk = string[][];
 export type Layer = {
   name: string;
   strayPixels: Set<string>;
+  strayPixelsHistory: Set<string>[];
   chunks: Chunk[];
+  chunksHistory: Chunk[][];
 };
 export type Frame = Layer[];
 export type Vector2 = {
@@ -146,6 +148,15 @@ function PixiliCanvas(props: {}) {
             break;
         }
 
+        if (e.code === "KeyZ" && e.ctrlKey) {
+          const layer = appState.editingLayer;
+          if (layer.strayPixelsHistory.length > 0) {
+            layer.strayPixels =
+              layer.strayPixelsHistory.shift() as Layer["strayPixels"];
+            render();
+          }
+        }
+
         render();
       }}
       width={canvasSize.x}
@@ -163,6 +174,9 @@ function PixiliCanvas(props: {}) {
         appState.brush.up?.({ state: appState });
       }}
       onMouseDown={(e: MouseEvent) => {
+        appState.editingLayer.strayPixelsHistory.unshift(
+          new Set(appState.editingLayer.strayPixels)
+        );
         appState.mouseDown = true;
         appState.brush.down?.({ state: appState });
       }}
