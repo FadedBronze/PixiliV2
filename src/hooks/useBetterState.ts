@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const useBetterState = <T>(value: T) => {
+export const useBetterState = <T>(value: T) => {
   const [state, setState] = useState<T>(value);
   return {
     get value() {
