@@ -25,7 +25,6 @@ function App() {
 
 function PixiliCanvas(props: {}) {
   const appState = useContext(AppStateContext);
-
   const [width, height] = useWindowSize();
   const frame = useRef<Frame>([
     {
@@ -39,6 +38,7 @@ function PixiliCanvas(props: {}) {
       strayPixels: new Set(["10_15", "10_10", "-10_-15", "-10_-10"]),
     },
   ]);
+  const canvasSize = { x: width * 0.8, y: height };
 
   const getMousePos = (e: MouseEvent) => {
     const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
@@ -93,6 +93,18 @@ function PixiliCanvas(props: {}) {
       }
     });
   };
+
+  const render = () => {
+    const ctx = canvasRef.current?.getContext("2d");
+
+    if (ctx === null || ctx === undefined) return;
+
+    renderFrame(frame.current, appState.viewportPos, appState.zoom, ctx, {
+      x: canvasRef.current!.width,
+      y: canvasRef.current!.height,
+    });
+  };
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   return (
@@ -100,30 +112,28 @@ function PixiliCanvas(props: {}) {
       className="h-full w-4/5"
       tabIndex={0}
       onWheel={(e) => {
+        const getRawMouseGridPos = (mousePos: Vector2) => {
+          const pixelSize = appState.zoom * 100;
+
+          return {
+            x: mousePos.x / pixelSize - appState.viewportPos.x,
+            y: mousePos.y / pixelSize - appState.viewportPos.y,
+          };
+        };
+
         if (!canvasRef.current) return;
         const zoomDelta = e.deltaY * 0.0001;
-        const oldZoom = appState.zoom;
-        const oldPixelSize = appState.zoom * 100;
+        const oldMouseGridPos = getRawMouseGridPos(appState.mousePos);
         appState.zoom = Math.min(Math.max(appState.zoom - zoomDelta, 0.1), 1);
-        const pixelSize = appState.zoom * 100;
+        const MouseGridPos = getRawMouseGridPos(appState.mousePos);
 
-        const pixelsInViewPortXDiff =
-          canvasRef.current.width / pixelSize -
-          canvasRef.current.width / oldPixelSize;
-        const pixelsInViewPortYDiff =
-          canvasRef.current.height / pixelSize -
-          canvasRef.current.height / oldPixelSize;
+        const mouseGridPosDiffX = MouseGridPos.x - oldMouseGridPos.x;
+        const mouseGridPosDiffY = MouseGridPos.y - oldMouseGridPos.y;
 
-        appState.viewportPos.x += pixelsInViewPortXDiff / 2;
-        appState.viewportPos.y += pixelsInViewPortYDiff / 2;
+        appState.viewportPos.x += mouseGridPosDiffX;
+        appState.viewportPos.y += mouseGridPosDiffY;
 
-        const ctx = canvasRef.current?.getContext("2d");
-        if (ctx === null || ctx === undefined) return;
-
-        renderFrame(frame.current, appState.viewportPos, appState.zoom, ctx, {
-          x: canvasRef.current!.width,
-          y: canvasRef.current!.height,
-        });
+        render();
       }}
       onKeyDown={(e) => {
         switch (e.code) {
@@ -141,17 +151,10 @@ function PixiliCanvas(props: {}) {
             break;
         }
 
-        const ctx = canvasRef.current?.getContext("2d");
-
-        if (ctx === null || ctx === undefined) return;
-
-        renderFrame(frame.current, appState.viewportPos, appState.zoom, ctx, {
-          x: canvasRef.current!.width,
-          y: canvasRef.current!.height,
-        });
+        render();
       }}
-      width={width * 0.8}
-      height={height}
+      width={canvasSize.x}
+      height={canvasSize.y}
       ref={canvasRef}
       onMouseMove={(e: MouseEvent) => {
         appState.mousePos = getMousePos(e);
@@ -165,14 +168,7 @@ function PixiliCanvas(props: {}) {
         brushLayer.strayPixels.clear();
         brushLayer.strayPixels.add(`${mouseGridPos.x}_${mouseGridPos.y}`);
 
-        const ctx = canvasRef.current?.getContext("2d");
-
-        if (ctx === null || ctx === undefined) return;
-
-        renderFrame(frame.current, appState.viewportPos, appState.zoom, ctx, {
-          x: canvasRef.current!.width,
-          y: canvasRef.current!.height,
-        });
+        render();
       }}
     ></canvas>
   );
