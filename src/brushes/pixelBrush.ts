@@ -7,13 +7,14 @@ export type pixelBrushState = {
 };
 
 export const pixelBrush: Brush = {
+  name: "pixel",
   down({ state }) {},
   hold({ state }) {
     state.brushLayer.strayPixels.clear();
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
       state.zoom,
-      state.viewportPos
+      state.viewportPos.value
     );
     state.brushLayer.strayPixels.set(
       `${mouseGridPos.x}_${mouseGridPos.y}`,

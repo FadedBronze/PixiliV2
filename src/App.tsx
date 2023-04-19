@@ -22,10 +22,7 @@ export type Vector2 = {
 function App() {
   return (
     <div className="w-full h-full relative">
-      <div className="w-fit bottom-0 m-3 gap-3 absolute left-0 top-0 flex flex-grow-0 items-start">
-        <BrushToolbar></BrushToolbar>
-        <PropertyViewer></PropertyViewer>
-      </div>
+      <BrushManager></BrushManager>
       <PixiliCanvas />
       <div className="w-1/6 bg-slate-500 bottom-0 absolute right-0 top-0 m-3">
         <ColorViewer></ColorViewer>
@@ -72,7 +69,7 @@ function PixiliCanvas(props: {}) {
 
   const renderFrame = (
     frame: Frame,
-    viewPortPos: Vector2,
+    viewportPos: Vector2,
     zoom: number,
     ctx: CanvasRenderingContext2D,
     viewPortSize: Vector2
@@ -91,8 +88,8 @@ function PixiliCanvas(props: {}) {
         ctx.fillStyle = color;
 
         ctx.fillRect(
-          pixelSize * (gridPosition.x + viewPortPos.x),
-          pixelSize * (gridPosition.y + viewPortPos.y),
+          pixelSize * (gridPosition.x + viewportPos.x),
+          pixelSize * (gridPosition.y + viewportPos.y),
           pixelSize,
           pixelSize
         );
@@ -105,10 +102,16 @@ function PixiliCanvas(props: {}) {
 
     if (ctx === null || ctx === undefined) return;
 
-    renderFrame(appState.frame, appState.viewportPos, appState.zoom, ctx, {
-      x: canvasSize.x,
-      y: canvasSize.y,
-    });
+    renderFrame(
+      appState.frame,
+      appState.viewportPos.value,
+      appState.zoom,
+      ctx,
+      {
+        x: canvasSize.x,
+        y: canvasSize.y,
+      }
+    );
   };
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -122,8 +125,8 @@ function PixiliCanvas(props: {}) {
           const pixelSize = appState.zoom * 100;
 
           return {
-            x: mousePos.x / pixelSize - appState.viewportPos.x,
-            y: mousePos.y / pixelSize - appState.viewportPos.y,
+            x: mousePos.x / pixelSize - appState.viewportPos.value.x,
+            y: mousePos.y / pixelSize - appState.viewportPos.value.y,
           };
         };
 
@@ -136,24 +139,24 @@ function PixiliCanvas(props: {}) {
         const mouseGridPosDiffX = MouseGridPos.x - oldMouseGridPos.x;
         const mouseGridPosDiffY = MouseGridPos.y - oldMouseGridPos.y;
 
-        appState.viewportPos.x += mouseGridPosDiffX;
-        appState.viewportPos.y += mouseGridPosDiffY;
+        appState.viewportPos.value.x += mouseGridPosDiffX;
+        appState.viewportPos.value.y += mouseGridPosDiffY;
 
         render();
       }}
       onKeyDown={(e) => {
         switch (e.code) {
           case "KeyS":
-            appState.viewportPos.y -= 1;
+            appState.viewportPos.value.y -= 1;
             break;
           case "KeyW":
-            appState.viewportPos.y += 1;
+            appState.viewportPos.value.y += 1;
             break;
           case "KeyD":
-            appState.viewportPos.x -= 1;
+            appState.viewportPos.value.x -= 1;
             break;
           case "KeyA":
-            appState.viewportPos.x += 1;
+            appState.viewportPos.value.x += 1;
             break;
         }
 
@@ -193,32 +196,37 @@ function PixiliCanvas(props: {}) {
   );
 }
 
-function BrushToolbar() {
+function BrushManager() {
   const appState = useContext(AppStateContext);
+  const [selectedBrush, setSelectedBrush] = useState(appState.brush.name);
 
-  const brushStates = [
-    {
-      name: "eraser",
-      brush: eraserBrush,
-    },
-    {
-      name: "pixel",
-      brush: pixelBrush,
-    },
-  ];
+  return (
+    <div className="w-fit bottom-0 m-3 gap-3 absolute left-0 top-0 flex flex-grow-0 items-start">
+      <BrushToolbar
+        selectedBrush={selectedBrush}
+        setSelectedBrush={setSelectedBrush}
+      ></BrushToolbar>
+      <PropertyViewer selectedBrush={selectedBrush}></PropertyViewer>
+    </div>
+  );
+}
 
-  const [selectedBrush, setSelectedBrush] = useState("pixel");
+function BrushToolbar(props: {
+  selectedBrush: string;
+  setSelectedBrush: (value: string) => void;
+}) {
+  const appState = useContext(AppStateContext);
 
   return (
     <div className="p-4 h-full flex flex-wrap grow  w-full gap-2 justify-top flex-col align-center bg-slate-500">
-      {brushStates.map(({ name, brush }) => (
+      {appState.brushStates.map(({ brush }) => (
         <BrushToolbarBrush
-          name={name}
-          key={name}
-          selected={selectedBrush === name}
+          name={brush.name}
+          key={brush.name}
+          selected={props.selectedBrush === brush.name}
           select={() => {
             appState.brush = brush;
-            setSelectedBrush(name);
+            props.setSelectedBrush(brush.name);
           }}
         ></BrushToolbarBrush>
       ))}
@@ -325,20 +333,43 @@ function ColorOption(props: {
   );
 }
 
-function PropertyViewer() {
+function PropertyViewer(props: { selectedBrush: string }) {
   const appState = useContext(AppStateContext);
-  const name = Object.keys(appState.pixelBrushState.value);
+
+  const selectedBrushState = appState.brushStates.find(
+    ({ brush }) => brush.name === props.selectedBrush
+  );
+
+  if (selectedBrushState?.state === undefined) {
+    return <div></div>;
+  }
 
   return (
     <div className="p-2 flex gap-2 bg-slate-500">
-      <BrushProperty
-        name={name[0]}
-        setValue={(v) =>
-          (appState.pixelBrushState.value.pixelPerfect = v as boolean)
-        }
-        key={name[0]}
-        value={appState.pixelBrushState.value.pixelPerfect as boolean}
-      ></BrushProperty>
+      {Object.keys(selectedBrushState.state.value).map((value) => {
+        return (
+          selectedBrushState.state && (
+            <BrushProperty
+              name={value}
+              setValue={(v) => {
+                if (selectedBrushState?.state === undefined) {
+                  return;
+                }
+
+                (selectedBrushState.state.value[
+                  value as keyof typeof selectedBrushState.state.value
+                ] as any) = v;
+              }}
+              key={selectedBrushState.brush.name + value}
+              value={
+                selectedBrushState.state.value[
+                  value as keyof typeof selectedBrushState.state.value
+                ]
+              }
+            ></BrushProperty>
+          )
+        );
+      })}
     </div>
   );
 }

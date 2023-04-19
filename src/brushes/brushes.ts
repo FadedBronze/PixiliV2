@@ -5,6 +5,7 @@ type BrushDrawParams = {
 };
 
 export type Brush = {
+  name: string;
   down?: (params: BrushDrawParams) => void;
   hold?: (params: BrushDrawParams) => void;
   up?: (params: BrushDrawParams) => void;
