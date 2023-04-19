@@ -2,7 +2,7 @@ import { createContext, useRef } from "react";
 import { Frame, Layer, Vector2 } from "./App";
 import { useBetterState } from "./hooks/useBetterState";
 import { Brush } from "./brushes/brushes";
-import { pixelBrush } from "./brushes/pixelBrush";
+import { pixelBrush, pixelBrushState } from "./brushes/pixelBrush";
 
 export type AppState = {
   mouseDown: boolean;
@@ -15,6 +15,7 @@ export type AppState = {
   frame: Frame;
   editingLayer: Layer;
   brushLayer: Layer;
+  pixelBrushState: { value: pixelBrushState };
 };
 
 export const AppStateContext = createContext<AppState>({} as AppState);
@@ -44,6 +45,10 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
   return (
     <AppStateContext.Provider
       value={{
+        pixelBrushState: useBetterState({
+          pixelPerfect: false,
+          scale: 1,
+        }),
         mouseDown: mouseDownRef.current,
         brush: brushRef.current,
         zoom: 0.5,

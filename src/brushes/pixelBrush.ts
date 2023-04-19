@@ -1,6 +1,11 @@
 import { getMouseGridPos } from "../App";
 import { Brush } from "./brushes";
 
+export type pixelBrushState = {
+  pixelPerfect: boolean;
+  scale: number;
+};
+
 export const pixelBrush: Brush = {
   down({ state }) {},
   hold({ state }) {

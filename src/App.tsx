@@ -21,12 +21,13 @@ export type Vector2 = {
 
 function App() {
   return (
-    <div className="w-full h-full flex">
-      <div className="w-fit bg-slate-500 h-full">
+    <div className="w-full h-full relative">
+      <div className="w-fit bottom-0 m-3 gap-3 absolute left-0 top-0 flex flex-grow-0 items-start">
         <BrushToolbar></BrushToolbar>
+        <PropertyViewer></PropertyViewer>
       </div>
       <PixiliCanvas />
-      <div className="w-1/5 bg-slate-500">
+      <div className="w-1/6 bg-slate-500 bottom-0 absolute right-0 top-0 m-3">
         <ColorViewer></ColorViewer>
       </div>
     </div>
@@ -54,7 +55,7 @@ function PixiliCanvas(props: {}) {
   const appState = useContext(AppStateContext);
   const [width, height] = useWindowSize();
 
-  const canvasSize = { x: width * 0.6, y: height };
+  const canvasSize = { x: width, y: height };
 
   useEffect(() => {
     render();
@@ -114,7 +115,7 @@ function PixiliCanvas(props: {}) {
 
   return (
     <canvas
-      className="h-full w-4/5"
+      className="h-full w-full"
       tabIndex={0}
       onWheel={(e) => {
         const getRawMouseGridPos = (mousePos: Vector2) => {
@@ -209,7 +210,7 @@ function BrushToolbar() {
   const [selectedBrush, setSelectedBrush] = useState("pixel");
 
   return (
-    <div className="p-4 flex flex-wrap grow w-full gap-2 justify-top flex-col align-center">
+    <div className="p-4 h-full flex flex-wrap grow  w-full gap-2 justify-top flex-col align-center bg-slate-500">
       {brushStates.map(({ name, brush }) => (
         <BrushToolbarBrush
           name={name}
@@ -321,6 +322,62 @@ function ColorOption(props: {
         backgroundColor: props.color,
       }}
     ></button>
+  );
+}
+
+function PropertyViewer() {
+  const appState = useContext(AppStateContext);
+  const name = Object.keys(appState.pixelBrushState.value);
+
+  return (
+    <div className="p-2 flex gap-2 bg-slate-500">
+      <BrushProperty
+        name={name[0]}
+        setValue={(v) =>
+          (appState.pixelBrushState.value.pixelPerfect = v as boolean)
+        }
+        key={name[0]}
+        value={appState.pixelBrushState.value.pixelPerfect as boolean}
+      ></BrushProperty>
+    </div>
+  );
+}
+
+function BrushProperty(props: {
+  name: string;
+  value: boolean | number;
+  setValue: (value: boolean | number) => void;
+}) {
+  const { name, value, setValue } = props;
+
+  return (
+    <>
+      {typeof value == "boolean" && (
+        <div className="flex gap-2 text-slate-100 border-r pr-2">
+          <p>{name}</p>
+          <input
+            type="checkbox"
+            defaultChecked={value}
+            onChange={(e) => {
+              setValue(e.currentTarget.checked);
+            }}
+          ></input>
+        </div>
+      )}
+      {typeof value == "number" && (
+        <div className="flex gap-2 text-slate-100 border-r pr-2 ">
+          <p>{name}</p>
+          <input
+            defaultValue={value}
+            type="number"
+            onChange={(e) => {
+              setValue(parseInt(e.currentTarget.value) ?? 1);
+            }}
+            className="w-8 bg-slate-700"
+          ></input>
+        </div>
+      )}
+    </>
   );
 }
 
