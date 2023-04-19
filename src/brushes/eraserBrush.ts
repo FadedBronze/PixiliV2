@@ -1,7 +1,7 @@
 import { getMouseGridPos } from "../App";
 import { Brush } from "./brushes";
 
-export const pixelBrush: Brush = {
+export const eraserBrush: Brush = {
   down({ state }) {},
   hold({ state }) {
     state.brushLayer.strayPixels.clear();
@@ -12,12 +12,14 @@ export const pixelBrush: Brush = {
     );
     state.brushLayer.strayPixels.set(
       `${mouseGridPos.x}_${mouseGridPos.y}`,
-      state.color.value
+      "rgba(255, 255, 255, 0.5)"
     );
-    if (state.mouseDown) {
-      state.editingLayer.strayPixels.set(
-        `${mouseGridPos.x}_${mouseGridPos.y}`,
-        state.color.value
+    if (
+      state.mouseDown &&
+      state.editingLayer.strayPixels.has(`${mouseGridPos.x}_${mouseGridPos.y}`)
+    ) {
+      state.editingLayer.strayPixels.delete(
+        `${mouseGridPos.x}_${mouseGridPos.y}`
       );
     }
   },

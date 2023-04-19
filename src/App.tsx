@@ -1,12 +1,15 @@
 import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
 import useWindowSize from "./hooks/useWindowSize";
 import { AppStateContext } from "./AppState";
+import { Brush } from "./brushes/brushes";
+import { pixelBrush } from "./brushes/pixelBrush";
+import { eraserBrush } from "./brushes/eraserBrush";
 
 type Chunk = string[][];
 export type Layer = {
   name: string;
-  strayPixels: Set<string>;
-  strayPixelsHistory: Set<string>[];
+  strayPixels: Map<string, string>;
+  strayPixelsHistory: Map<string, string>[];
   chunks: Chunk[];
   chunksHistory: Chunk[][];
 };
@@ -19,8 +22,13 @@ export type Vector2 = {
 function App() {
   return (
     <div className="w-full h-full flex">
-      <div className="w-1/5 bg-slate-500 h-full"></div>
+      <div className="w-fit bg-slate-500 h-full">
+        <BrushToolbar></BrushToolbar>
+      </div>
       <PixiliCanvas />
+      <div className="w-1/5 bg-slate-500">
+        <ColorViewer></ColorViewer>
+      </div>
     </div>
   );
 }
@@ -46,7 +54,7 @@ function PixiliCanvas(props: {}) {
   const appState = useContext(AppStateContext);
   const [width, height] = useWindowSize();
 
-  const canvasSize = { x: width * 0.8, y: height };
+  const canvasSize = { x: width * 0.6, y: height };
 
   useEffect(() => {
     render();
@@ -73,13 +81,13 @@ function PixiliCanvas(props: {}) {
     ctx.clearRect(0, 0, viewPortSize.x, viewPortSize.y);
 
     frame.forEach((layer) => {
-      for (const value of layer.strayPixels) {
+      for (const [position, color] of layer.strayPixels) {
         const gridPosition = {
-          x: parseInt(value.split("_")[0], 10),
-          y: parseInt(value.split("_")[1], 10),
+          x: parseInt(position.split("_")[0], 10),
+          y: parseInt(position.split("_")[1], 10),
         };
 
-        ctx.fillStyle = "red";
+        ctx.fillStyle = color;
 
         ctx.fillRect(
           pixelSize * (gridPosition.x + viewPortPos.x),
@@ -97,8 +105,8 @@ function PixiliCanvas(props: {}) {
     if (ctx === null || ctx === undefined) return;
 
     renderFrame(appState.frame, appState.viewportPos, appState.zoom, ctx, {
-      x: canvasRef.current!.width,
-      y: canvasRef.current!.height,
+      x: canvasSize.x,
+      y: canvasSize.y,
     });
   };
 
@@ -175,12 +183,144 @@ function PixiliCanvas(props: {}) {
       }}
       onMouseDown={(e: MouseEvent) => {
         appState.editingLayer.strayPixelsHistory.unshift(
-          new Set(appState.editingLayer.strayPixels)
+          new Map(appState.editingLayer.strayPixels)
         );
         appState.mouseDown = true;
         appState.brush.down?.({ state: appState });
       }}
     ></canvas>
+  );
+}
+
+function BrushToolbar() {
+  const appState = useContext(AppStateContext);
+
+  const brushStates = [
+    {
+      name: "eraser",
+      brush: eraserBrush,
+    },
+    {
+      name: "pixel",
+      brush: pixelBrush,
+    },
+  ];
+
+  const [selectedBrush, setSelectedBrush] = useState("pixel");
+
+  return (
+    <div className="p-4 flex flex-wrap grow w-full gap-2 justify-top flex-col align-center">
+      {brushStates.map(({ name, brush }) => (
+        <BrushToolbarBrush
+          name={name}
+          key={name}
+          selected={selectedBrush === name}
+          select={() => {
+            appState.brush = brush;
+            setSelectedBrush(name);
+          }}
+        ></BrushToolbarBrush>
+      ))}
+    </div>
+  );
+}
+
+function BrushToolbarBrush(props: {
+  selected: boolean;
+  select: () => void;
+  name: string;
+}) {
+  return (
+    <button
+      onClick={() => props.select()}
+      className={`bg-slate-300 rounded-md flex justify-center items-center w-12 h-12 ${
+        props.selected ? "border-4 border-slate-100" : ""
+      }`}
+    >
+      {props.name}
+    </button>
+  );
+}
+
+function ColorViewer() {
+  const appState = useContext(AppStateContext);
+
+  const [colors, setColors] = useState([
+    "#FF00FF",
+    "#FF0000",
+    "#FFFF00",
+    "#00FF00",
+    "#00FFFF",
+    "#0000FF",
+  ]);
+
+  const [selectedColor, setSelectedColor] = useState("#0000FF");
+
+  const addColor = (color: string) => {
+    if (colors.includes(color.toLocaleUpperCase())) return;
+    setColors([...colors, color.toLocaleUpperCase()]);
+  };
+
+  return (
+    <div className="p-2">
+      <div className="w-full flex justify-center items-center aspect-square border-b border-white">
+        <input
+          className=""
+          type="color"
+          value={appState.color.value}
+          onChange={(e) => {
+            appState.color.value = e.currentTarget.value;
+          }}
+        />
+      </div>
+      <div className="flex border-b border-white p-2 flex-wrap">
+        {colors.map((color) => (
+          <ColorOption
+            selected={selectedColor === color}
+            select={() => setSelectedColor(color)}
+            delete={() =>
+              setColors(colors.filter((newColor) => newColor !== color))
+            }
+            setColor={() => (appState.color.value = color)}
+            color={color}
+            key={color}
+          />
+        ))}
+        <button
+          className="w-1/4 aspect-square bg-slate-500 text-white"
+          onClick={() => {
+            addColor(appState.color.value);
+          }}
+        >
+          Add
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ColorOption(props: {
+  color: string;
+  setColor: () => void;
+  selected: boolean;
+  select: () => void;
+  delete: () => void;
+}) {
+  return (
+    <button
+      className={`w-1/4 aspect-square ${
+        props.selected ? "border-2 border-white" : ""
+      }`}
+      onClick={() => {
+        if (props.selected) props.delete();
+
+        props.select();
+        props.setColor();
+      }}
+      style={{
+        backgroundColor: props.color,
+      }}
+    ></button>
   );
 }
 

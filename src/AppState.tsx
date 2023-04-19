@@ -1,4 +1,4 @@
-import { createContext } from "react";
+import { createContext, useRef } from "react";
 import { Frame, Layer, Vector2 } from "./App";
 import { useBetterState } from "./hooks/useBetterState";
 import { Brush } from "./brushes/brushes";
@@ -10,6 +10,7 @@ export type AppState = {
   viewportPos: Vector2;
   mousePos: Vector2;
   editingLayerName: { value: string };
+  color: { value: string };
   brush: Brush;
   frame: Frame;
   editingLayer: Layer;
@@ -19,31 +20,38 @@ export type AppState = {
 export const AppStateContext = createContext<AppState>({} as AppState);
 
 export function AppStateContextProvider(props: { children: JSX.Element }) {
+  const mouseDownRef = useRef(false);
+  const brushRef = useRef(pixelBrush);
+  const viewPortRef = useRef({ x: 0, y: 0 });
+  const mousePosRef = useRef({ x: 0, y: 0 });
+  const frameRef = useRef([
+    {
+      chunks: [],
+      chunksHistory: [],
+      name: "layer 1",
+      strayPixels: new Map(),
+      strayPixelsHistory: [],
+    },
+    {
+      chunks: [],
+      chunksHistory: [],
+      name: "brush",
+      strayPixels: new Map(),
+      strayPixelsHistory: [],
+    },
+  ]);
+
   return (
     <AppStateContext.Provider
       value={{
-        mouseDown: false,
-        brush: pixelBrush,
+        mouseDown: mouseDownRef.current,
+        brush: brushRef.current,
         zoom: 0.5,
-        viewportPos: { x: 0, y: 0 },
-        mousePos: { x: 0, y: 0 },
+        viewportPos: viewPortRef.current,
+        mousePos: mousePosRef.current,
         editingLayerName: useBetterState("layer 1"),
-        frame: [
-          {
-            chunks: [],
-            chunksHistory: [],
-            name: "brush",
-            strayPixels: new Set(),
-            strayPixelsHistory: [],
-          },
-          {
-            chunks: [],
-            chunksHistory: [],
-            name: "layer 1",
-            strayPixels: new Set(),
-            strayPixelsHistory: [],
-          },
-        ],
+        color: useBetterState("red"),
+        frame: frameRef.current,
         get brushLayer() {
           return this.frame.find(({ name }) => name === "brush") as Layer;
         },
