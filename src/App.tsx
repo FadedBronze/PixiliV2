@@ -4,6 +4,8 @@ import { AppStateContext } from "./AppState";
 import { Brush } from "./brushes/brushes";
 import { pixelBrush } from "./brushes/pixelBrush";
 import { eraserBrush } from "./brushes/eraserBrush";
+import { BrushToolbar } from "./Components/BrushToolbar";
+import { ColorPalette } from "./Components/ColorPallete";
 
 type Chunk = string[][];
 export type Layer = {
@@ -25,7 +27,7 @@ function App() {
       <BrushManager></BrushManager>
       <PixiliCanvas />
       <div className="w-1/6 bg-slate-500 bottom-0 absolute right-0 top-0 m-3">
-        <ColorViewer></ColorViewer>
+        <ColorPalette></ColorPalette>
       </div>
     </div>
   );
@@ -208,128 +210,6 @@ function BrushManager() {
       ></BrushToolbar>
       <PropertyViewer selectedBrush={selectedBrush}></PropertyViewer>
     </div>
-  );
-}
-
-function BrushToolbar(props: {
-  selectedBrush: string;
-  setSelectedBrush: (value: string) => void;
-}) {
-  const appState = useContext(AppStateContext);
-
-  return (
-    <div className="p-4 h-full flex flex-wrap grow  w-full gap-2 justify-top flex-col align-center bg-slate-500">
-      {appState.brushStates.map(({ brush }) => (
-        <BrushToolbarBrush
-          name={brush.name}
-          key={brush.name}
-          selected={props.selectedBrush === brush.name}
-          select={() => {
-            appState.brush = brush;
-            props.setSelectedBrush(brush.name);
-          }}
-        ></BrushToolbarBrush>
-      ))}
-    </div>
-  );
-}
-
-function BrushToolbarBrush(props: {
-  selected: boolean;
-  select: () => void;
-  name: string;
-}) {
-  return (
-    <button
-      onClick={() => props.select()}
-      className={`bg-slate-300 rounded-md flex justify-center items-center w-12 h-12 ${
-        props.selected ? "border-4 border-slate-100" : ""
-      }`}
-    >
-      {props.name}
-    </button>
-  );
-}
-
-function ColorViewer() {
-  const appState = useContext(AppStateContext);
-
-  const [colors, setColors] = useState([
-    "#FF00FF",
-    "#FF0000",
-    "#FFFF00",
-    "#00FF00",
-    "#00FFFF",
-    "#0000FF",
-  ]);
-
-  const [selectedColor, setSelectedColor] = useState("#0000FF");
-
-  const addColor = (color: string) => {
-    if (colors.includes(color.toLocaleUpperCase())) return;
-    setColors([...colors, color.toLocaleUpperCase()]);
-  };
-
-  return (
-    <div className="p-2">
-      <div className="w-full flex justify-center items-center aspect-square border-b border-white">
-        <input
-          className=""
-          type="color"
-          value={appState.color.value}
-          onChange={(e) => {
-            appState.color.value = e.currentTarget.value;
-          }}
-        />
-      </div>
-      <div className="flex border-b border-white p-2 flex-wrap">
-        {colors.map((color) => (
-          <ColorOption
-            selected={selectedColor === color}
-            select={() => setSelectedColor(color)}
-            delete={() =>
-              setColors(colors.filter((newColor) => newColor !== color))
-            }
-            setColor={() => (appState.color.value = color)}
-            color={color}
-            key={color}
-          />
-        ))}
-        <button
-          className="w-1/4 aspect-square bg-slate-500 text-white"
-          onClick={() => {
-            addColor(appState.color.value);
-          }}
-        >
-          Add
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ColorOption(props: {
-  color: string;
-  setColor: () => void;
-  selected: boolean;
-  select: () => void;
-  delete: () => void;
-}) {
-  return (
-    <button
-      className={`w-1/4 aspect-square ${
-        props.selected ? "border-2 border-white" : ""
-      }`}
-      onClick={() => {
-        if (props.selected) props.delete();
-
-        props.select();
-        props.setColor();
-      }}
-      style={{
-        backgroundColor: props.color,
-      }}
-    ></button>
   );
 }
 
