@@ -1,4 +1,4 @@
-import { getMouseGridPos } from "../App";
+import { getMouseGridPos } from "../Components/PixiliCanvas";
 import { Brush } from "./brushes";
 
 export type pixelBrushState = {
@@ -8,12 +8,23 @@ export type pixelBrushState = {
 
 export const pixelBrush: Brush = {
   name: "pixel",
-  down({ state }) {},
+  down({ state }) {
+    const mouseGridPos = getMouseGridPos(
+      state.mousePos,
+      state.zoom.value,
+      state.viewportPos.value
+    );
+
+    state.editingLayer.strayPixels.set(
+      `${mouseGridPos.x}_${mouseGridPos.y}`,
+      state.color.value
+    );
+  },
   hold({ state }) {
     state.brushLayer.strayPixels.clear();
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
-      state.zoom,
+      state.zoom.value,
       state.viewportPos.value
     );
     state.brushLayer.strayPixels.set(

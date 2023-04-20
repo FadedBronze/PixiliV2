@@ -8,14 +8,14 @@ export function BrushToolbar(props: {
   const appState = useContext(AppStateContext);
 
   return (
-    <div className="p-4 h-full flex flex-wrap grow  w-full gap-2 justify-top flex-col align-center bg-slate-500">
+    <div className="p-2 gap-2 h-48 w-48 grid grid-cols-3 bg-slate-500 z-0 overflow-y-scroll overflow-x-hidden">
       {appState.brushStates.map(({ brush }) => (
         <BrushToolbarBrush
           name={brush.name}
           key={brush.name}
           selected={props.selectedBrush === brush.name}
           select={() => {
-            appState.brush = brush;
+            appState.brush.value = brush;
             props.setSelectedBrush(brush.name);
           }}
         ></BrushToolbarBrush>

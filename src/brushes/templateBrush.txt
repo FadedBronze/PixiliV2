@@ -1,0 +1,16 @@
+//copy pasta purposes:
+
+import { Brush } from "./brushes";
+
+export type <name>State = {
+};
+
+export const <name>: Brush = {
+  name: <name>,
+  down({ state }) {},
+  hold({ state }) {
+    if (state.mouseDown) {
+    }
+  },
+  up({ state }) {},
+};

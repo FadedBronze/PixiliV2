@@ -6,6 +6,7 @@ import { pixelBrush } from "./brushes/pixelBrush";
 import { eraserBrush } from "./brushes/eraserBrush";
 import { BrushToolbar } from "./Components/BrushToolbar";
 import { ColorPalette } from "./Components/ColorPallete";
+import { PixiliCanvas } from "./Components/PixiliCanvas";
 
 type Chunk = string[][];
 export type Layer = {
@@ -24,191 +25,30 @@ export type Vector2 = {
 function App() {
   return (
     <div className="w-full h-full relative">
-      <BrushManager></BrushManager>
       <PixiliCanvas />
-      <div className="w-1/6 bg-slate-500 bottom-0 absolute right-0 top-0 m-3">
-        <ColorPalette></ColorPalette>
-      </div>
+      <OverlayUI></OverlayUI>
     </div>
   );
 }
 
-export const getMouseGridPos = (
-  mousePos: Vector2,
-  zoom: number,
-  viewportPos: Vector2
-) => {
-  const pixelSize = zoom * 100;
-
-  return {
-    x: Math.round(
-      (mousePos.x - (mousePos.x % pixelSize)) / pixelSize - viewportPos.x
-    ),
-    y: Math.round(
-      (mousePos.y - (mousePos.y % pixelSize)) / pixelSize - viewportPos.y
-    ),
-  };
-};
-
-function PixiliCanvas(props: {}) {
+function OverlayUI() {
   const appState = useContext(AppStateContext);
-  const [width, height] = useWindowSize();
-
-  const canvasSize = { x: width, y: height };
-
-  useEffect(() => {
-    render();
-  }, [width]);
-
-  const getMousePos = (e: MouseEvent) => {
-    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
-
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
-  };
-
-  const renderFrame = (
-    frame: Frame,
-    viewportPos: Vector2,
-    zoom: number,
-    ctx: CanvasRenderingContext2D,
-    viewPortSize: Vector2
-  ) => {
-    const pixelSize = zoom * 100;
-
-    ctx.clearRect(0, 0, viewPortSize.x, viewPortSize.y);
-
-    frame.forEach((layer) => {
-      for (const [position, color] of layer.strayPixels) {
-        const gridPosition = {
-          x: parseInt(position.split("_")[0], 10),
-          y: parseInt(position.split("_")[1], 10),
-        };
-
-        ctx.fillStyle = color;
-
-        ctx.fillRect(
-          pixelSize * (gridPosition.x + viewportPos.x),
-          pixelSize * (gridPosition.y + viewportPos.y),
-          pixelSize,
-          pixelSize
-        );
-      }
-    });
-  };
-
-  const render = () => {
-    const ctx = canvasRef.current?.getContext("2d");
-
-    if (ctx === null || ctx === undefined) return;
-
-    renderFrame(
-      appState.frame,
-      appState.viewportPos.value,
-      appState.zoom,
-      ctx,
-      {
-        x: canvasSize.x,
-        y: canvasSize.y,
-      }
-    );
-  };
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   return (
-    <canvas
-      className="h-full w-full"
-      tabIndex={0}
-      onWheel={(e) => {
-        const getRawMouseGridPos = (mousePos: Vector2) => {
-          const pixelSize = appState.zoom * 100;
-
-          return {
-            x: mousePos.x / pixelSize - appState.viewportPos.value.x,
-            y: mousePos.y / pixelSize - appState.viewportPos.value.y,
-          };
-        };
-
-        if (!canvasRef.current) return;
-        const zoomDelta = e.deltaY * 0.0001;
-        const oldMouseGridPos = getRawMouseGridPos(appState.mousePos);
-        appState.zoom = Math.min(Math.max(appState.zoom - zoomDelta, 0.1), 1);
-        const MouseGridPos = getRawMouseGridPos(appState.mousePos);
-
-        const mouseGridPosDiffX = MouseGridPos.x - oldMouseGridPos.x;
-        const mouseGridPosDiffY = MouseGridPos.y - oldMouseGridPos.y;
-
-        appState.viewportPos.value.x += mouseGridPosDiffX;
-        appState.viewportPos.value.y += mouseGridPosDiffY;
-
-        render();
-      }}
-      onKeyDown={(e) => {
-        switch (e.code) {
-          case "KeyS":
-            appState.viewportPos.value.y -= 1;
-            break;
-          case "KeyW":
-            appState.viewportPos.value.y += 1;
-            break;
-          case "KeyD":
-            appState.viewportPos.value.x -= 1;
-            break;
-          case "KeyA":
-            appState.viewportPos.value.x += 1;
-            break;
-        }
-
-        if (e.code === "KeyZ" && e.ctrlKey) {
-          const layer = appState.editingLayer;
-          if (layer.strayPixelsHistory.length > 0) {
-            layer.strayPixels =
-              layer.strayPixelsHistory.shift() as Layer["strayPixels"];
-            render();
-          }
-        }
-
-        render();
-      }}
-      width={canvasSize.x}
-      height={canvasSize.y}
-      ref={canvasRef}
-      onMouseMove={(e: MouseEvent) => {
-        appState.mousePos = getMousePos(e);
-
-        appState.brush.hold?.({ state: appState });
-
-        render();
-      }}
-      onMouseUp={() => {
-        appState.mouseDown = false;
-        appState.brush.up?.({ state: appState });
-      }}
-      onMouseDown={(e: MouseEvent) => {
-        appState.editingLayer.strayPixelsHistory.unshift(
-          new Map(appState.editingLayer.strayPixels)
-        );
-        appState.mouseDown = true;
-        appState.brush.down?.({ state: appState });
-      }}
-    ></canvas>
-  );
-}
-
-function BrushManager() {
-  const appState = useContext(AppStateContext);
-  const [selectedBrush, setSelectedBrush] = useState(appState.brush.name);
-
-  return (
-    <div className="w-fit bottom-0 m-3 gap-3 absolute left-0 top-0 flex flex-grow-0 items-start">
-      <BrushToolbar
-        selectedBrush={selectedBrush}
-        setSelectedBrush={setSelectedBrush}
-      ></BrushToolbar>
-      <PropertyViewer selectedBrush={selectedBrush}></PropertyViewer>
+    <div className="fixed top-0 left-0">
+      <div className="max-h-full bg-slate-500 m-2 fixed top-0 bottom-0 right-0 w-fit">
+        <ColorPalette></ColorPalette>
+        <BrushToolbar
+          selectedBrush={appState.currentBrush.value}
+          setSelectedBrush={(v) => (appState.currentBrush.value = v)}
+        ></BrushToolbar>
+      </div>
+      <div className="fixed top-0 bottom-0 left-0 p-2"></div>
+      <div className="fixed top-0 left-0 p-2">
+        <PropertyViewer
+          selectedBrush={appState.currentBrush.value}
+        ></PropertyViewer>
+      </div>
     </div>
   );
 }
@@ -225,7 +65,7 @@ function PropertyViewer(props: { selectedBrush: string }) {
   }
 
   return (
-    <div className="p-2 flex gap-2 bg-slate-500">
+    <div className="p-2 flex gap-2 bg-slate-500 pointer-events-auto w-full h-full">
       {Object.keys(selectedBrushState.state.value).map((value) => {
         return (
           selectedBrushState.state && (

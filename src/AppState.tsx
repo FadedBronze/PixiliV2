@@ -4,20 +4,22 @@ import { useBetterState } from "./hooks/useBetterState";
 import { Brush } from "./brushes/brushes";
 import { pixelBrush, pixelBrushState } from "./brushes/pixelBrush";
 import { eraserBrush, eraserBrushState } from "./brushes/eraserBrush";
+import { fillBrush } from "./brushes/fillBrush";
 
 export type AppState = {
   mouseDown: boolean;
-  zoom: number;
+  zoom: { value: number };
   viewportPos: { value: Vector2 };
   mousePos: Vector2;
   editingLayerName: { value: string };
   color: { value: string };
-  brush: Brush;
+  brush: { value: Brush };
   frame: Frame;
   editingLayer: Layer;
   brushLayer: Layer;
   pixelBrushState: { value: pixelBrushState };
   eraserState: { value: eraserBrushState };
+  currentBrush: { value: string };
   brushStates: {
     brush: Brush;
     state?: {
@@ -30,8 +32,9 @@ export const AppStateContext = createContext<AppState>({} as AppState);
 
 export function AppStateContextProvider(props: { children: JSX.Element }) {
   const mouseDownRef = useRef(false);
-  const brushRef = useRef(pixelBrush);
+  const brushRef = useRef({ value: pixelBrush });
   const mousePosRef = useRef({ x: 0, y: 0 });
+  const zoomRef = useRef({ value: 0.5 });
   const frameRef = useRef([
     {
       chunks: [],
@@ -58,8 +61,9 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
         }),
         eraserState: useBetterState({ scale: 0 }),
         mouseDown: mouseDownRef.current,
+        currentBrush: useBetterState(brushRef.current.value.name),
         brush: brushRef.current,
-        zoom: 0.5,
+        zoom: zoomRef.current,
         viewportPos: useBetterState({ x: 0, y: 0 }),
         mousePos: mousePosRef.current,
         editingLayerName: useBetterState("layer 1"),
@@ -82,6 +86,9 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
             {
               brush: pixelBrush,
               state: this.pixelBrushState,
+            },
+            {
+              brush: fillBrush,
             },
           ];
         },

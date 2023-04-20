@@ -1,4 +1,4 @@
-import { getMouseGridPos } from "../App";
+import { getMouseGridPos } from "../Components/PixiliCanvas";
 import { Brush } from "./brushes";
 
 export type eraserBrushState = {
@@ -12,7 +12,7 @@ export const eraserBrush: Brush = {
     state.brushLayer.strayPixels.clear();
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
-      state.zoom,
+      state.zoom.value,
       state.viewportPos.value
     );
     state.brushLayer.strayPixels.set(

@@ -21,7 +21,7 @@ export function ColorPalette() {
   };
 
   return (
-    <div className="p-2">
+    <div className=" bg-slate-500">
       <div className="w-full flex justify-center items-center aspect-square border-b border-white">
         <input
           className=""
