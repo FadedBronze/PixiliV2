@@ -92,6 +92,9 @@ export function PixiliCanvas(props: {}) {
   return (
     <canvas
       className="h-full w-full"
+      style={{
+        backgroundColor: appState.backgroundColor.value,
+      }}
       tabIndex={0}
       onWheel={(e) => {
         const getRawMouseGridPos = (mousePos: Vector2) => {

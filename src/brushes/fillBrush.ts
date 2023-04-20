@@ -13,7 +13,10 @@ export const fillBrush: Brush = {
 
     const replacingColor = strayPixels.get(`${gridPos.x}_${gridPos.y}`);
 
-    if (replacingColor === undefined) return;
+    if (replacingColor === undefined) {
+      state.backgroundColor.value = state.color.value;
+      return;
+    }
 
     const floodFill = (x: number, y: number) => {
       if (strayPixels.get(`${x}_${y}`) !== replacingColor) return;

@@ -11,6 +11,7 @@ export type AppState = {
   zoom: { value: number };
   viewportPos: { value: Vector2 };
   mousePos: Vector2;
+  backgroundColor: { value: string };
   editingLayerName: { value: string };
   color: { value: string };
   brush: { value: Brush };
@@ -55,6 +56,7 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
   return (
     <AppStateContext.Provider
       value={{
+        backgroundColor: useBetterState("black"),
         pixelBrushState: useBetterState({
           pixelPerfect: false,
           scale: 1,
