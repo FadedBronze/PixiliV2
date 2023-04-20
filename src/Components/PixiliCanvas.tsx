@@ -97,6 +97,25 @@ export function PixiliCanvas(props: {}) {
       }}
       tabIndex={0}
       onWheel={(e) => {
+        if (e.shiftKey) {
+          const brushState = appState.brushStates.find(
+            ({ brush }) => brush.name === appState.currentBrush.value
+          )?.state;
+
+          if (brushState?.value === undefined) return;
+
+          if ("scale" in brushState.value) {
+            brushState.value = {
+              ...brushState.value,
+              scale:
+                (brushState.value.scale as number) +
+                Math.round(e.deltaY * 0.005),
+            };
+          }
+
+          return;
+        }
+
         const getRawMouseGridPos = (mousePos: Vector2) => {
           const pixelSize = appState.zoom.value * 100;
 
