@@ -1,25 +1,35 @@
-import { useContext, useState } from "react";
-import { AppStateContext } from "../AppState";
+import { useBrushState } from "../brushes/useBrushState";
 
 export function BrushToolbar(props: {
   selectedBrush: string;
   setSelectedBrush: (value: string) => void;
 }) {
-  const appState = useContext(AppStateContext);
+  const brushState = useBrushState();
+
+  const getState = brushState.get();
 
   return (
     <div className="p-2 gap-2 h-48 w-48 grid grid-cols-3 bg-slate-500 z-0 overflow-y-scroll overflow-x-hidden">
-      {appState.brushStates.map(({ brush }) => (
-        <BrushToolbarBrush
-          name={brush.name}
-          key={brush.name}
-          selected={props.selectedBrush === brush.name}
-          select={() => {
-            appState.brush.value = brush;
-            props.setSelectedBrush(brush.name);
-          }}
-        ></BrushToolbarBrush>
-      ))}
+      {Object.keys(getState.brushes).map((brush) => {
+        const currentBrush =
+          getState.brushes[brush as keyof typeof getState.brushes];
+
+        return (
+          <BrushToolbarBrush
+            name={currentBrush.brush.name}
+            key={currentBrush.brush.name}
+            selected={props.selectedBrush === currentBrush.brush.name}
+            select={() => {
+              brushState.set((v) => {
+                const newState = { ...v };
+                newState.current = brush;
+                return newState;
+              });
+              props.setSelectedBrush(currentBrush.brush.name);
+            }}
+          ></BrushToolbarBrush>
+        );
+      })}
     </div>
   );
 }

@@ -18,15 +18,6 @@ export type AppState = {
   frame: Frame;
   editingLayer: Layer;
   brushLayer: Layer;
-  pixelBrushState: { value: pixelBrushState };
-  eraserState: { value: eraserBrushState };
-  currentBrush: { value: string };
-  brushStates: {
-    brush: Brush;
-    state?: {
-      value: object;
-    };
-  }[];
 };
 
 export const AppStateContext = createContext<AppState>({} as AppState);
@@ -57,13 +48,7 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
     <AppStateContext.Provider
       value={{
         backgroundColor: useBetterState("black"),
-        pixelBrushState: useBetterState({
-          pixelPerfect: false,
-          scale: 1,
-        }),
-        eraserState: useBetterState({ scale: 0 }),
         mouseDown: mouseDownRef.current,
-        currentBrush: useBetterState(brushRef.current.value.name),
         brush: brushRef.current,
         zoom: zoomRef.current,
         viewportPos: useBetterState({ x: 0, y: 0 }),
@@ -78,21 +63,6 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
           return this.frame.find(
             ({ name }) => name === this.editingLayerName.value
           ) as Layer;
-        },
-        get brushStates() {
-          return [
-            {
-              brush: eraserBrush,
-              state: this.eraserState,
-            },
-            {
-              brush: pixelBrush,
-              state: this.pixelBrushState,
-            },
-            {
-              brush: fillBrush,
-            },
-          ];
         },
       }}
     >

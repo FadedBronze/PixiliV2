@@ -7,6 +7,7 @@ import { eraserBrush } from "./brushes/eraserBrush";
 import { BrushToolbar } from "./Components/BrushToolbar";
 import { ColorPalette } from "./Components/ColorPallete";
 import { PixiliCanvas } from "./Components/PixiliCanvas";
+import { useBrushState } from "./brushes/useBrushState";
 
 type Chunk = string[][];
 export type Layer = {
@@ -32,59 +33,72 @@ function App() {
 }
 
 function OverlayUI() {
-  const appState = useContext(AppStateContext);
+  const brushState = useBrushState();
 
   return (
     <div className="fixed top-0 left-0">
       <div className="max-h-full bg-slate-500 m-2 fixed top-0 bottom-0 right-0 w-fit">
         <ColorPalette></ColorPalette>
         <BrushToolbar
-          selectedBrush={appState.currentBrush.value}
-          setSelectedBrush={(v) => (appState.currentBrush.value = v)}
+          selectedBrush={brushState.get().current}
+          setSelectedBrush={(v) =>
+            brushState.set((currentState) => {
+              const newState = { ...currentState };
+              newState.current = v;
+              return newState;
+            })
+          }
         ></BrushToolbar>
       </div>
       <div className="fixed top-0 bottom-0 left-0 p-2"></div>
       <div className="fixed top-0 left-0 p-2">
-        <PropertyViewer
-          selectedBrush={appState.currentBrush.value}
-        ></PropertyViewer>
+        <PropertyViewer></PropertyViewer>
       </div>
     </div>
   );
 }
 
-function PropertyViewer(props: { selectedBrush: string }) {
-  const appState = useContext(AppStateContext);
+function PropertyViewer() {
+  const brushState = useBrushState();
+  const brushes = brushState.get().brushes;
+  const selectedBrushName = Object.keys(brushes).find(
+    (brush) =>
+      brushes[brush as keyof typeof brushes].brush.name ===
+      brushState.get().current
+  ) as keyof typeof brushes;
+  const selectedBrush = brushes[selectedBrushName];
 
-  const selectedBrushState = appState.brushStates.find(
-    ({ brush }) => brush.name === props.selectedBrush
-  );
-
-  if (selectedBrushState?.state === undefined) {
-    return <div></div>;
-  }
+  if (selectedBrush.state === undefined) return <></>;
 
   return (
     <div className="p-2 flex gap-2 bg-slate-500 pointer-events-auto w-full h-full">
-      {Object.keys(selectedBrushState.state.value).map((value) => {
+      {Object.keys(selectedBrush.state).map((value) => {
         return (
-          selectedBrushState.state && (
+          selectedBrush.state && (
             <BrushProperty
               name={value}
               setValue={(v) => {
-                if (selectedBrushState?.state === undefined) {
+                if (selectedBrush.state === undefined) {
                   return;
                 }
 
-                (selectedBrushState.state.value[
-                  value as keyof typeof selectedBrushState.state.value
-                ] as any) = v;
+                brushState.set((prevState) => {
+                  const newState = { ...prevState };
+
+                  const newSelectedBrush = newState.brushes[selectedBrushName];
+
+                  if (newSelectedBrush.state === undefined) return prevState;
+
+                  newSelectedBrush.state[
+                    value as keyof typeof newSelectedBrush.state
+                  ] = v as any;
+
+                  return newState;
+                });
               }}
-              key={selectedBrushState.brush.name + value}
+              key={selectedBrush.brush.name + value}
               value={
-                selectedBrushState.state.value[
-                  value as keyof typeof selectedBrushState.state.value
-                ]
+                selectedBrush.state[value as keyof typeof selectedBrush.state]
               }
             ></BrushProperty>
           )
@@ -108,7 +122,7 @@ function BrushProperty(props: {
           <p>{name}</p>
           <input
             type="checkbox"
-            defaultChecked={value}
+            checked={value}
             onChange={(e) => {
               setValue(e.currentTarget.checked);
             }}
@@ -119,7 +133,7 @@ function BrushProperty(props: {
         <div className="flex gap-2 text-slate-100 border-r pr-2 ">
           <p>{name}</p>
           <input
-            defaultValue={value}
+            value={value}
             type="number"
             onChange={(e) => {
               setValue(parseInt(e.currentTarget.value) ?? 1);

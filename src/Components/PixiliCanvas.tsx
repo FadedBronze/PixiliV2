@@ -3,6 +3,7 @@ import { Vector2, Frame, Layer } from "../App";
 import { AppStateContext } from "../AppState";
 import useWindowSize from "../hooks/useWindowSize";
 import { MouseEvent } from "react";
+import { useBrushState } from "../brushes/useBrushState";
 
 export const getMouseGridPos = (
   mousePos: Vector2,
@@ -89,6 +90,8 @@ export function PixiliCanvas(props: {}) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const brushState = useBrushState();
+
   return (
     <canvas
       className="h-full w-full"
@@ -98,20 +101,26 @@ export function PixiliCanvas(props: {}) {
       tabIndex={0}
       onWheel={(e) => {
         if (e.shiftKey) {
-          const brushState = appState.brushStates.find(
-            ({ brush }) => brush.name === appState.currentBrush.value
-          )?.state;
+          const brushes = brushState.get().brushes;
+          const selectedBrushName = Object.keys(brushes).find(
+            (brush) =>
+              brushes[brush as keyof typeof brushes].brush.name ===
+              brushState.get().current
+          ) as keyof typeof brushes;
 
-          if (brushState?.value === undefined) return;
+          brushState.set((prevState) => {
+            const newState = { ...prevState };
 
-          if ("scale" in brushState.value) {
-            brushState.value = {
-              ...brushState.value,
-              scale:
-                (brushState.value.scale as number) +
-                Math.round(e.deltaY * 0.005),
-            };
-          }
+            const selectedBrush = newState.brushes[selectedBrushName];
+
+            if (selectedBrush.state && "scale" in selectedBrush.state) {
+              selectedBrush.state.scale += Math.round(e.deltaY * 0.005);
+
+              return newState;
+            }
+
+            return prevState;
+          });
 
           return;
         }
