@@ -6,7 +6,7 @@ export type eraserBrushState = {
 };
 
 export const eraserBrush: Brush = {
-  name: "eraser",
+  name: "eraserBrush",
   down({ state }) {},
   hold({ state }) {
     state.brushLayer.strayPixels.clear();

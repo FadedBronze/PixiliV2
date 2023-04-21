@@ -7,7 +7,7 @@ export type pixelBrushState = {
 };
 
 export const pixelBrush: Brush = {
-  name: "pixel",
+  name: "pixelBrush",
   down({ state }) {
     const mouseGridPos = getMouseGridPos(
       state.mousePos,

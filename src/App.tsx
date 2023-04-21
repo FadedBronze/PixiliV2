@@ -61,45 +61,41 @@ function OverlayUI() {
 function PropertyViewer() {
   const brushState = useBrushState();
   const brushes = brushState.get().brushes;
-  const selectedBrushName = Object.keys(brushes).find(
-    (brush) =>
-      brushes[brush as keyof typeof brushes].brush.name ===
-      brushState.get().current
-  ) as keyof typeof brushes;
-  const selectedBrush = brushes[selectedBrushName];
+  const selectedBrushName = brushState.get().current;
+  const selectedBrush = brushes[selectedBrushName as keyof typeof brushes];
 
-  if (selectedBrush.state === undefined) return <></>;
+  if (selectedBrush === undefined) return <></>;
 
   return (
     <div className="p-2 flex gap-2 bg-slate-500 pointer-events-auto w-full h-full">
-      {Object.keys(selectedBrush.state).map((value) => {
+      {Object.keys(selectedBrush).map((value) => {
         return (
-          selectedBrush.state && (
+          selectedBrush && (
             <BrushProperty
               name={value}
               setValue={(v) => {
-                if (selectedBrush.state === undefined) {
+                if (selectedBrush === undefined) {
                   return;
                 }
 
                 brushState.set((prevState) => {
                   const newState = { ...prevState };
 
-                  const newSelectedBrush = newState.brushes[selectedBrushName];
+                  const newSelectedBrush =
+                    newState.brushes[
+                      selectedBrushName as keyof typeof newState.brushes
+                    ];
 
-                  if (newSelectedBrush.state === undefined) return prevState;
+                  if (newSelectedBrush === undefined) return prevState;
 
-                  newSelectedBrush.state[
-                    value as keyof typeof newSelectedBrush.state
-                  ] = v as any;
+                  newSelectedBrush[value as keyof typeof newSelectedBrush] =
+                    v as any;
 
                   return newState;
                 });
               }}
-              key={selectedBrush.brush.name + value}
-              value={
-                selectedBrush.state[value as keyof typeof selectedBrush.state]
-              }
+              key={selectedBrushName + value}
+              value={selectedBrush[value as keyof typeof selectedBrush]}
             ></BrushProperty>
           )
         );

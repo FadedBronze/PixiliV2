@@ -14,7 +14,6 @@ export type AppState = {
   backgroundColor: { value: string };
   editingLayerName: { value: string };
   color: { value: string };
-  brush: { value: Brush };
   frame: Frame;
   editingLayer: Layer;
   brushLayer: Layer;
@@ -24,7 +23,6 @@ export const AppStateContext = createContext<AppState>({} as AppState);
 
 export function AppStateContextProvider(props: { children: JSX.Element }) {
   const mouseDownRef = useRef(false);
-  const brushRef = useRef({ value: pixelBrush });
   const mousePosRef = useRef({ x: 0, y: 0 });
   const zoomRef = useRef({ value: 0.5 });
   const frameRef = useRef([
@@ -49,7 +47,6 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
       value={{
         backgroundColor: useBetterState("black"),
         mouseDown: mouseDownRef.current,
-        brush: brushRef.current,
         zoom: zoomRef.current,
         viewportPos: useBetterState({ x: 0, y: 0 }),
         mousePos: mousePosRef.current,

@@ -11,21 +11,18 @@ export function BrushToolbar(props: {
   return (
     <div className="p-2 gap-2 h-48 w-48 grid grid-cols-3 bg-slate-500 z-0 overflow-y-scroll overflow-x-hidden">
       {Object.keys(getState.brushes).map((brush) => {
-        const currentBrush =
-          getState.brushes[brush as keyof typeof getState.brushes];
-
         return (
           <BrushToolbarBrush
-            name={currentBrush.brush.name}
-            key={currentBrush.brush.name}
-            selected={props.selectedBrush === currentBrush.brush.name}
+            name={brush}
+            key={brush}
+            selected={props.selectedBrush === brush}
             select={() => {
               brushState.set((v) => {
                 const newState = { ...v };
                 newState.current = brush;
                 return newState;
               });
-              props.setSelectedBrush(currentBrush.brush.name);
+              props.setSelectedBrush(brush);
             }}
           ></BrushToolbarBrush>
         );

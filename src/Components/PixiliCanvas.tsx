@@ -102,19 +102,18 @@ export function PixiliCanvas(props: {}) {
       onWheel={(e) => {
         if (e.shiftKey) {
           const brushes = brushState.get().brushes;
-          const selectedBrushName = Object.keys(brushes).find(
-            (brush) =>
-              brushes[brush as keyof typeof brushes].brush.name ===
-              brushState.get().current
-          ) as keyof typeof brushes;
+          const selectedBrushName = brushState.get().current;
 
           brushState.set((prevState) => {
             const newState = { ...prevState };
 
-            const selectedBrush = newState.brushes[selectedBrushName];
+            const selectedBrush =
+              newState.brushes[
+                selectedBrushName as keyof typeof newState.brushes
+              ];
 
-            if (selectedBrush.state && "scale" in selectedBrush.state) {
-              selectedBrush.state.scale += Math.round(e.deltaY * 0.005);
+            if (selectedBrush && "scale" in selectedBrush) {
+              selectedBrush.scale += Math.round(e.deltaY * 0.005);
 
               return newState;
             }
@@ -183,21 +182,16 @@ export function PixiliCanvas(props: {}) {
       ref={canvasRef}
       onMouseMove={(e: MouseEvent) => {
         appState.mousePos = getMousePos(e);
-
-        appState.brush.value.hold?.({ state: appState });
-
         render();
       }}
       onMouseUp={() => {
         appState.mouseDown = false;
-        appState.brush.value.up?.({ state: appState });
       }}
       onMouseDown={(e: MouseEvent) => {
         appState.editingLayer.strayPixelsHistory.unshift(
           new Map(appState.editingLayer.strayPixels)
         );
         appState.mouseDown = true;
-        appState.brush.value.down?.({ state: appState });
       }}
     ></canvas>
   );

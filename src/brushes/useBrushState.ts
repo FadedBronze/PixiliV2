@@ -1,47 +1,28 @@
 import { useHookstate, hookstate } from "@hookstate/core";
 import { pixelBrush, pixelBrushState } from "./pixelBrush";
 import { eraserBrush, eraserBrushState } from "./eraserBrush";
-import { Brush } from "./brushes";
 import { fillBrush } from "./fillBrush";
 
 type BrushState = {
   current: string;
   brushes: {
-    pixelBrush: {
-      brush: Brush;
-      state: pixelBrushState;
-    };
-    eraser: {
-      brush: Brush;
-      state: eraserBrushState;
-    };
-    fill: {
-      brush: Brush;
-      state: undefined;
-    };
+    pixel: pixelBrushState;
+    eraser: eraserBrushState;
+    fill: undefined;
   };
 };
 
 const brushState = hookstate<BrushState>({
-  current: "pixel",
+  current: "pixelBrush",
   brushes: {
-    pixelBrush: {
-      state: {
-        pixelPerfect: false,
-        scale: 1,
-      },
-      brush: pixelBrush,
+    pixel: {
+      pixelPerfect: false,
+      scale: 1,
     },
     eraser: {
-      state: {
-        scale: 1,
-      },
-      brush: eraserBrush,
+      scale: 1,
     },
-    fill: {
-      brush: fillBrush,
-      state: undefined,
-    },
+    fill: undefined,
   },
 });
 
