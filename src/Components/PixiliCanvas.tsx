@@ -4,6 +4,7 @@ import { AppStateContext } from "../AppState";
 import useWindowSize from "../hooks/useWindowSize";
 import { MouseEvent } from "react";
 import { useBrushState } from "../brushes/useBrushState";
+import { brushes } from "../brushes/brushes";
 
 export const getMouseGridPos = (
   mousePos: Vector2,
@@ -182,16 +183,20 @@ export function PixiliCanvas(props: {}) {
       ref={canvasRef}
       onMouseMove={(e: MouseEvent) => {
         appState.mousePos = getMousePos(e);
+        brushes()[brushState.get().current].hold?.({ state: appState });
         render();
       }}
       onMouseUp={() => {
         appState.mouseDown = false;
+        brushes()[brushState.get().current].up?.({ state: appState });
       }}
       onMouseDown={(e: MouseEvent) => {
         appState.editingLayer.strayPixelsHistory.unshift(
           new Map(appState.editingLayer.strayPixels)
         );
         appState.mouseDown = true;
+
+        brushes()[brushState.get().current].down?.({ state: appState });
       }}
     ></canvas>
   );

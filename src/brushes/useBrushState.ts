@@ -1,7 +1,6 @@
 import { useHookstate, hookstate } from "@hookstate/core";
-import { pixelBrush, pixelBrushState } from "./pixelBrush";
-import { eraserBrush, eraserBrushState } from "./eraserBrush";
-import { fillBrush } from "./fillBrush";
+import { pixelBrushState } from "./pixelBrush";
+import { eraserBrushState } from "./eraserBrush";
 
 type Brushes = {
   pixel: pixelBrushState;
