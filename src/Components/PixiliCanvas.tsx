@@ -5,6 +5,7 @@ import useWindowSize from "../hooks/useWindowSize";
 import { MouseEvent } from "react";
 import { useBrushState } from "../brushes/useBrushState";
 import { brushes } from "../brushes/brushes";
+import { roundToNearestPow } from "../helpers/roundToNearestPower";
 
 export const getMouseGridPos = (
   mousePos: Vector2,
@@ -65,11 +66,52 @@ export function PixiliCanvas(props: {}) {
         ctx.fillRect(
           pixelSize * (gridPosition.x + viewportPos.x),
           pixelSize * (gridPosition.y + viewportPos.y),
-          pixelSize,
-          pixelSize
+          pixelSize + 1,
+          pixelSize + 1
         );
       }
     });
+  };
+
+  const gridLines = (
+    zoom: number,
+    ctx: CanvasRenderingContext2D,
+    viewportPos: Vector2
+  ) => {
+    const pixelSize = zoom * 100;
+
+    ctx.strokeStyle = "grey";
+    ctx.lineWidth = 0.5;
+
+    const pixelsOnScreen = Math.floor(width / pixelSize);
+
+    const pixelsInChunkGrid = roundToNearestPow(pixelsOnScreen / 8, 8);
+
+    for (let i = 0; i < width; i += pixelSize * pixelsInChunkGrid) {
+      ctx.beginPath();
+      ctx.moveTo(
+        i + ((viewportPos.x * pixelSize) % (pixelSize * pixelsInChunkGrid)),
+        0
+      );
+      ctx.lineTo(
+        i + ((viewportPos.x * pixelSize) % (pixelSize * pixelsInChunkGrid)),
+        height
+      );
+      ctx.stroke();
+    }
+
+    for (let i = 0; i < height; i += pixelSize * pixelsInChunkGrid) {
+      ctx.beginPath();
+      ctx.moveTo(
+        0,
+        i + ((viewportPos.y * pixelSize) % (pixelSize * pixelsInChunkGrid))
+      );
+      ctx.lineTo(
+        width,
+        i + ((viewportPos.y * pixelSize) % (pixelSize * pixelsInChunkGrid))
+      );
+      ctx.stroke();
+    }
   };
 
   const render = () => {
@@ -87,6 +129,8 @@ export function PixiliCanvas(props: {}) {
         y: canvasSize.y,
       }
     );
+
+    gridLines(appState.zoom.value, ctx, appState.viewportPos.value);
   };
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -102,7 +146,6 @@ export function PixiliCanvas(props: {}) {
       tabIndex={0}
       onWheel={(e) => {
         if (e.shiftKey) {
-          const brushes = brushState.get().brushes;
           const selectedBrushName = brushState.get().current;
 
           brushState.set((prevState) => {

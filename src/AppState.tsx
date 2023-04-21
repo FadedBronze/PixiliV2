@@ -44,7 +44,7 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
       value={{
         selectMode: selectModeRef.current,
         selectionStart: selectionStartRef.current,
-        backgroundColor: useBetterState("black"),
+        backgroundColor: useBetterState("rgb(30, 30, 30)"),
         mouseDown: mouseDownRef.current,
         zoom: zoomRef.current,
         viewportPos: useBetterState({ x: 0, y: 0 }),
