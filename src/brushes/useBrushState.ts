@@ -3,17 +3,19 @@ import { pixelBrush, pixelBrushState } from "./pixelBrush";
 import { eraserBrush, eraserBrushState } from "./eraserBrush";
 import { fillBrush } from "./fillBrush";
 
+type Brushes = {
+  pixel: pixelBrushState;
+  eraser: eraserBrushState;
+  fill: undefined;
+};
+
 type BrushState = {
-  current: string;
-  brushes: {
-    pixel: pixelBrushState;
-    eraser: eraserBrushState;
-    fill: undefined;
-  };
+  current: keyof Brushes;
+  brushes: Brushes;
 };
 
 const brushState = hookstate<BrushState>({
-  current: "pixelBrush",
+  current: "pixel",
   brushes: {
     pixel: {
       pixelPerfect: false,

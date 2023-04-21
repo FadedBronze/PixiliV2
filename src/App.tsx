@@ -44,7 +44,7 @@ function OverlayUI() {
           setSelectedBrush={(v) =>
             brushState.set((currentState) => {
               const newState = { ...currentState };
-              newState.current = v;
+              newState.current = v as keyof typeof newState.brushes;
               return newState;
             })
           }

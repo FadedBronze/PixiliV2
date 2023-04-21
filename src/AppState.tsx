@@ -1,10 +1,6 @@
 import { createContext, useRef } from "react";
 import { Frame, Layer, Vector2 } from "./App";
 import { useBetterState } from "./hooks/useBetterState";
-import { Brush } from "./brushes/brushes";
-import { pixelBrush, pixelBrushState } from "./brushes/pixelBrush";
-import { eraserBrush, eraserBrushState } from "./brushes/eraserBrush";
-import { fillBrush } from "./brushes/fillBrush";
 
 export type AppState = {
   mouseDown: boolean;

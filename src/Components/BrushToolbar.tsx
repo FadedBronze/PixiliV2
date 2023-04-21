@@ -19,7 +19,7 @@ export function BrushToolbar(props: {
             select={() => {
               brushState.set((v) => {
                 const newState = { ...v };
-                newState.current = brush;
+                newState.current = brush as keyof typeof newState.brushes;
                 return newState;
               });
               props.setSelectedBrush(brush);
