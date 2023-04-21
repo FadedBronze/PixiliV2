@@ -29,7 +29,7 @@ export const pixelBrush: Brush = {
     });
   },
   hold({ state, brushState }) {
-    state.brushLayer.strayPixels.clear();
+    state.brushLayer.pixels.clear();
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
       state.zoom.value,

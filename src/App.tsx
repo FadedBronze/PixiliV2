@@ -1,22 +1,14 @@
-import { MouseEvent, useContext, useEffect, useRef, useState } from "react";
-import useWindowSize from "./hooks/useWindowSize";
-import { AppStateContext } from "./AppState";
-import { Brush } from "./brushes/brushes";
-import { pixelBrush } from "./brushes/pixelBrush";
-import { eraserBrush } from "./brushes/eraserBrush";
 import { BrushToolbar } from "./Components/BrushToolbar";
 import { ColorPalette } from "./Components/ColorPallete";
 import { PixiliCanvas } from "./Components/PixiliCanvas";
 import { useBrushState } from "./brushes/useBrushState";
 
-type Chunk = string[][];
 export type Layer = {
   name: string;
-  strayPixels: Map<string, string>;
-  strayPixelsHistory: Map<string, string>[];
-  chunks: Chunk[];
-  chunksHistory: Chunk[][];
+  pixels: Map<string, string>;
+  pixelsHistory: Map<string, string>[];
 };
+
 export type Frame = Layer[];
 export type Vector2 = {
   x: number;

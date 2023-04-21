@@ -10,7 +10,7 @@ export const eraserBrush: Brush = {
   name: "eraserBrush",
   down({ state }) {},
   hold({ state, brushState }) {
-    state.brushLayer.strayPixels.clear();
+    state.brushLayer.pixels.clear();
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
       state.zoom.value,

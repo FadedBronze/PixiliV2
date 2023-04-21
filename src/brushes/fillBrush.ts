@@ -9,7 +9,7 @@ export const fillBrush: Brush = {
       state.zoom.value,
       state.viewportPos.value
     );
-    const strayPixels = state.editingLayer.strayPixels;
+    const strayPixels = state.editingLayer.pixels;
 
     const replacingColor = strayPixels.get(`${gridPos.x}_${gridPos.y}`);
 
@@ -32,13 +32,13 @@ export const fillBrush: Brush = {
     floodFill(gridPos.x, gridPos.y);
   },
   hold({ state }) {
-    state.brushLayer.strayPixels.clear();
+    state.brushLayer.pixels.clear();
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
       state.zoom.value,
       state.viewportPos.value
     );
-    state.brushLayer.strayPixels.set(
+    state.brushLayer.pixels.set(
       `${mouseGridPos.x}_${mouseGridPos.y}`,
       "rgba(255, 255, 255, 0.5)"
     );

@@ -54,7 +54,7 @@ export function PixiliCanvas(props: {}) {
     ctx.clearRect(0, 0, viewPortSize.x, viewPortSize.y);
 
     frame.forEach((layer) => {
-      for (const [position, color] of layer.strayPixels) {
+      for (const [position, color] of layer.pixels) {
         const gridPosition = {
           x: parseInt(position.split("_")[0], 10),
           y: parseInt(position.split("_")[1], 10),
@@ -121,7 +121,6 @@ export function PixiliCanvas(props: {}) {
 
             return prevState;
           });
-
           return;
         }
 
@@ -169,10 +168,8 @@ export function PixiliCanvas(props: {}) {
 
         if (e.code === "KeyZ" && e.ctrlKey) {
           const layer = appState.editingLayer;
-          if (layer.strayPixelsHistory.length > 0) {
-            layer.strayPixels =
-              layer.strayPixelsHistory.shift() as Layer["strayPixels"];
-            render();
+          if (layer.pixelsHistory.length > 0) {
+            layer.pixels = layer.pixelsHistory.shift() as Layer["pixels"];
           }
         }
 
@@ -197,8 +194,8 @@ export function PixiliCanvas(props: {}) {
         });
       }}
       onMouseDown={() => {
-        appState.editingLayer.strayPixelsHistory.unshift(
-          new Map(appState.editingLayer.strayPixels)
+        appState.editingLayer.pixelsHistory.unshift(
+          new Map(appState.editingLayer.pixels)
         );
         appState.mouseDown = true;
 

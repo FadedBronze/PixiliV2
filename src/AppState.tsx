@@ -23,18 +23,14 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
   const zoomRef = useRef({ value: 0.5 });
   const frameRef = useRef([
     {
-      chunks: [],
-      chunksHistory: [],
       name: "layer 1",
-      strayPixels: new Map(),
-      strayPixelsHistory: [],
+      pixels: new Map(),
+      pixelsHistory: [],
     },
     {
-      chunks: [],
-      chunksHistory: [],
       name: "brush",
-      strayPixels: new Map(),
-      strayPixelsHistory: [],
+      pixels: new Map(),
+      pixelsHistory: [],
     },
   ]);
 

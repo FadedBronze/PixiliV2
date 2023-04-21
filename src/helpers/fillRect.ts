@@ -11,11 +11,11 @@ export default function fillRect(params: {
   for (let i = 0; i < scale.x; i++) {
     for (let j = 0; j < scale.y; j++) {
       if (color === undefined) {
-        if (layer.strayPixels.has(`${position.x + i}_${position.y + j}`)) {
-          layer.strayPixels.delete(`${position.x + i}_${position.y + j}`);
+        if (layer.pixels.has(`${position.x + i}_${position.y + j}`)) {
+          layer.pixels.delete(`${position.x + i}_${position.y + j}`);
         }
       } else {
-        layer.strayPixels.set(`${position.x + i}_${position.y + j}`, color);
+        layer.pixels.set(`${position.x + i}_${position.y + j}`, color);
       }
     }
   }
