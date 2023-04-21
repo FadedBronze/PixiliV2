@@ -14,6 +14,8 @@ export type AppState = {
   editingLayer: Layer;
   brushLayer: Layer;
   selection: Map<string, string>;
+  selectMode: "selecting" | "selected" | "not selecting";
+  selectionStart: Vector2;
 };
 
 export const AppStateContext = createContext<AppState>({} as AppState);
@@ -34,10 +36,14 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
       pixelsHistory: [],
     },
   ]);
+  const selectionStartRef = useRef({ x: 0, y: 0 });
+  const selectModeRef = useRef<AppState["selectMode"]>("not selecting");
 
   return (
     <AppStateContext.Provider
       value={{
+        selectMode: selectModeRef.current,
+        selectionStart: selectionStartRef.current,
         backgroundColor: useBetterState("black"),
         mouseDown: mouseDownRef.current,
         zoom: zoomRef.current,
