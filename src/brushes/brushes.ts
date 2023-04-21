@@ -1,10 +1,13 @@
+import { State } from "@hookstate/core";
 import { AppState } from "../AppState";
 import { eraserBrush } from "./eraserBrush";
 import { fillBrush } from "./fillBrush";
 import { pixelBrush } from "./pixelBrush";
+import { BrushState } from "./useBrushState";
 
 type BrushDrawParams = {
   state: AppState;
+  brushState: BrushState;
 };
 
 export type Brush = {

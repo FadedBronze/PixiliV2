@@ -1,4 +1,5 @@
 import { getMouseGridPos } from "../Components/PixiliCanvas";
+import fillRect from "../helpers/fillRect";
 import { Brush } from "./brushes";
 
 export type eraserBrushState = {
@@ -8,24 +9,32 @@ export type eraserBrushState = {
 export const eraserBrush: Brush = {
   name: "eraserBrush",
   down({ state }) {},
-  hold({ state }) {
+  hold({ state, brushState }) {
     state.brushLayer.strayPixels.clear();
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
       state.zoom.value,
       state.viewportPos.value
     );
-    state.brushLayer.strayPixels.set(
-      `${mouseGridPos.x}_${mouseGridPos.y}`,
-      "rgba(255, 255, 255, 0.5)"
-    );
-    if (
-      state.mouseDown &&
-      state.editingLayer.strayPixels.has(`${mouseGridPos.x}_${mouseGridPos.y}`)
-    ) {
-      state.editingLayer.strayPixels.delete(
-        `${mouseGridPos.x}_${mouseGridPos.y}`
-      );
+    fillRect({
+      scale: {
+        x: brushState.brushes.eraser.scale,
+        y: brushState.brushes.eraser.scale,
+      },
+      layer: state.brushLayer,
+      position: mouseGridPos,
+      color: "rgba(255, 255, 255, 0.5)",
+    });
+
+    if (state.mouseDown) {
+      fillRect({
+        scale: {
+          x: brushState.brushes.eraser.scale,
+          y: brushState.brushes.eraser.scale,
+        },
+        layer: state.editingLayer,
+        position: mouseGridPos,
+      });
     }
   },
   up() {},

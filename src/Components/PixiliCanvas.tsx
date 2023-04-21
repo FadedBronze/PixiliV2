@@ -183,20 +183,29 @@ export function PixiliCanvas(props: {}) {
       ref={canvasRef}
       onMouseMove={(e: MouseEvent) => {
         appState.mousePos = getMousePos(e);
-        brushes()[brushState.get().current].hold?.({ state: appState });
+        brushes()[brushState.get().current].hold?.({
+          state: appState,
+          brushState: brushState.get(),
+        });
         render();
       }}
       onMouseUp={() => {
         appState.mouseDown = false;
-        brushes()[brushState.get().current].up?.({ state: appState });
+        brushes()[brushState.get().current].up?.({
+          state: appState,
+          brushState: brushState.get(),
+        });
       }}
-      onMouseDown={(e: MouseEvent) => {
+      onMouseDown={() => {
         appState.editingLayer.strayPixelsHistory.unshift(
           new Map(appState.editingLayer.strayPixels)
         );
         appState.mouseDown = true;
 
-        brushes()[brushState.get().current].down?.({ state: appState });
+        brushes()[brushState.get().current].down?.({
+          state: appState,
+          brushState: brushState.get(),
+        });
       }}
     ></canvas>
   );

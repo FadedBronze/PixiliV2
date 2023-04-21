@@ -8,7 +8,7 @@ type Brushes = {
   fill: undefined;
 };
 
-type BrushState = {
+export type BrushState = {
   current: keyof Brushes;
   brushes: Brushes;
 };
