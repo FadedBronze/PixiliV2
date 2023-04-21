@@ -13,6 +13,7 @@ export type AppState = {
   frame: Frame;
   editingLayer: Layer;
   brushLayer: Layer;
+  selection: Map<string, string>;
 };
 
 export const AppStateContext = createContext<AppState>({} as AppState);
@@ -45,6 +46,7 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
         editingLayerName: useBetterState("layer 1"),
         color: useBetterState("red"),
         frame: frameRef.current,
+        selection: new Map(),
         get brushLayer() {
           return this.frame.find(({ name }) => name === "brush") as Layer;
         },

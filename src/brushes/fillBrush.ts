@@ -1,6 +1,8 @@
 import { getMouseGridPos } from "../Components/PixiliCanvas";
 import { Brush } from "./brushes";
 
+export type fillState = undefined;
+
 export const fillBrush: Brush = {
   name: "fillBrush",
   down({ state }) {

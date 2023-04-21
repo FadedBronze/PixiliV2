@@ -1,11 +1,14 @@
 import { useHookstate, hookstate } from "@hookstate/core";
 import { pixelBrushState } from "./pixelBrush";
 import { eraserBrushState } from "./eraserBrush";
+import { selectionState } from "./selectionBrush";
+import { fillState } from "./fillBrush";
 
 type Brushes = {
   pixel: pixelBrushState;
   eraser: eraserBrushState;
-  fill: undefined;
+  fill: fillState;
+  select: selectionState;
 };
 
 export type BrushState = {
@@ -24,6 +27,7 @@ const brushState = hookstate<BrushState>({
       scale: 1,
     },
     fill: undefined,
+    select: undefined,
   },
 });
 

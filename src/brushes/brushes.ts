@@ -4,6 +4,7 @@ import { eraserBrush } from "./eraserBrush";
 import { fillBrush } from "./fillBrush";
 import { pixelBrush } from "./pixelBrush";
 import { BrushState } from "./useBrushState";
+import { selectionBrush } from "./selectionBrush";
 
 type BrushDrawParams = {
   state: AppState;
@@ -22,5 +23,6 @@ export function brushes() {
     eraser: eraserBrush,
     fill: fillBrush,
     pixel: pixelBrush,
+    select: selectionBrush,
   };
 }
