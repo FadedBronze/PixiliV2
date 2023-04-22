@@ -1,4 +1,5 @@
 import { Layer, Vector2 } from "../App";
+import * as _ from "lodash";
 
 export const fillRect = (params: {
   scale: Vector2;
@@ -8,8 +9,8 @@ export const fillRect = (params: {
 }) => {
   const { scale, layer, position, color } = params;
 
-  for (let i = 0; i < scale.x; i += scale.x < 0 ? -1 : 1) {
-    for (let j = 0; j < scale.y; j += scale.y < 0 ? -1 : 1) {
+  for (const i of _.range(0, scale.x)) {
+    for (const j of _.range(0, scale.y)) {
       if (color === undefined) {
         if (layer.pixels.has(`${position.x + i}_${position.y + j}`)) {
           layer.pixels.delete(`${position.x + i}_${position.y + j}`);
@@ -63,11 +64,12 @@ export const getPixelsRect = (params: {
   position: Vector2;
 }) => {
   const { scale, layer, position } = params;
+  console.log(params);
 
   const pixels = new Map();
 
-  for (let i = 0; i === scale.x; i += scale.x < 0 ? -1 : 1) {
-    for (let j = 0; j === scale.y; j += scale.x < 0 ? -1 : 1) {
+  for (const i of _.range(0, scale.x)) {
+    for (const j of _.range(0, scale.y)) {
       const pixel = layer.pixels.get(`${position.x + i}_${position.y + j}`);
 
       if (pixel !== undefined) {

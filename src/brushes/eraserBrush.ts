@@ -1,4 +1,4 @@
-import { fillRect } from "../helpers/fillMethods";
+import { clearLayer, fillRect } from "../helpers/fillMethods";
 import { getMouseGridPos } from "../helpers/getMouseGridPos";
 import { Brush } from "./brushes";
 
@@ -10,7 +10,7 @@ export const eraserBrush: Brush = {
   name: "eraserBrush",
   down({ state }) {},
   hold({ state, brushState }) {
-    state.brushLayer.pixels.clear();
+    clearLayer(state.brushLayer);
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
       state.zoom.value,

@@ -18,15 +18,22 @@ export const selectionBrush: Brush = {
         state.selectMode = "selecting";
         break;
       case "selecting":
+        const gridMousePos = getMouseGridPos(
+          state.mousePos,
+          state.zoom.value,
+          state.viewportPos.value
+        );
+
         state.selection = getPixelsRect({
-          scale: getMouseGridPos(
-            state.mousePos,
-            state.zoom.value,
-            state.viewportPos.value
-          ),
+          scale: {
+            x: gridMousePos.x - state.selectionStart.x,
+            y: gridMousePos.y - state.selectionStart.y,
+          },
           layer: state.editingLayer,
           position: state.selectionStart,
         });
+
+        console.log(state.selection);
 
         state.selectMode = "selected";
         break;

@@ -59,14 +59,54 @@ export function PixiliCanvas() {
     ctx: CanvasRenderingContext2D,
     viewportPos: Vector2
   ) => {
+    const inverseLinearInterpolation = (a: number, b: number, v: number) => {
+      return (v - b) / (a - b);
+    };
+
     const pixelSize = zoom * 100;
-
-    ctx.strokeStyle = "rgba(125, 125, 125, 0.5)";
-    ctx.lineWidth = 0.5;
-
     const pixelsOnScreen = Math.floor(width / pixelSize);
 
-    const pixelsInChunkGrid = roundToNearestPow(pixelsOnScreen / 8, 4);
+    const val = pixelsOnScreen / 8;
+    const pixelsInChunkGridCeil = roundToNearestPow(val, 4, "ceil");
+
+    const pixelsInChunkGridFloor = roundToNearestPow(val, 4, "floor");
+
+    const gridVisibilityInterpolation = inverseLinearInterpolation(
+      pixelsInChunkGridCeil,
+      pixelsInChunkGridFloor,
+      val
+    );
+
+    createGridLines({
+      ctx,
+      pixelsInChunkGrid: pixelsInChunkGridCeil,
+      pixelSize,
+      viewportPos,
+      color: `rgba(125, 125, 125, ${gridVisibilityInterpolation})`,
+    });
+
+    createGridLines({
+      ctx,
+      pixelsInChunkGrid: pixelsInChunkGridFloor,
+      pixelSize,
+      viewportPos,
+      color: `rgba(125, 125, 125, ${Math.abs(
+        gridVisibilityInterpolation - 1
+      )})`,
+    });
+  };
+
+  const createGridLines = (params: {
+    pixelSize: number;
+    pixelsInChunkGrid: number;
+    ctx: CanvasRenderingContext2D;
+    viewportPos: Vector2;
+    color: string;
+  }) => {
+    const { ctx, pixelSize, pixelsInChunkGrid, viewportPos, color } = params;
+
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = color;
 
     for (let i = 0; i < width; i += pixelSize * pixelsInChunkGrid) {
       ctx.beginPath();
@@ -164,10 +204,10 @@ export function PixiliCanvas() {
 
         if (!canvasRef.current) return;
 
-        const zoomDelta = e.deltaY * 0.0001;
+        const zoomDelta = e.deltaY * 0.0005 * appState.zoom.value;
         const oldMouseGridPos = getRawMouseGridPos(appState.mousePos);
         appState.zoom.value = Math.min(
-          Math.max(appState.zoom.value - zoomDelta, 0.02),
+          Math.max(appState.zoom.value - zoomDelta, 0.002),
           1
         );
         const MouseGridPos = getRawMouseGridPos(appState.mousePos);
