@@ -1,7 +1,11 @@
-import { getMouseGridPos } from "../Components/PixiliCanvas";
-import fillRect from "../helpers/fillRect";
-import getPixelsRect from "../helpers/getPixelsRect";
-import renderPixels from "../helpers/renderRect";
+import {
+  clearLayer,
+  fillPixel,
+  fillRect,
+  getPixelsRect,
+} from "../helpers/fillMethods";
+import { getMouseGridPos } from "../helpers/getMouseGridPos";
+import { renderPixels } from "../helpers/fillMethods";
 import { Brush } from "./brushes";
 
 export type selectionState = undefined;
@@ -47,7 +51,7 @@ export const selectionBrush: Brush = {
     );
   },
   hold({ state }) {
-    state.brushLayer.pixels.clear();
+    clearLayer(state.brushLayer);
 
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
@@ -57,11 +61,7 @@ export const selectionBrush: Brush = {
 
     switch (state.selectMode) {
       case "not selecting":
-        fillRect({
-          scale: {
-            x: 1,
-            y: 1,
-          },
+        fillPixel({
           layer: state.brushLayer,
           color: "rgba(255, 255, 255, 0.1)",
           position: mouseGridPos,

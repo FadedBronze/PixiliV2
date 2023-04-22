@@ -1,4 +1,5 @@
-import { getMouseGridPos } from "../Components/PixiliCanvas";
+import { clearLayer } from "../helpers/fillMethods";
+import { getMouseGridPos } from "../helpers/getMouseGridPos";
 import { Brush } from "./brushes";
 
 export type fillState = undefined;
@@ -34,7 +35,7 @@ export const fillBrush: Brush = {
     floodFill(gridPos.x, gridPos.y);
   },
   hold({ state }) {
-    state.brushLayer.pixels.clear();
+    clearLayer(state.brushLayer);
     const mouseGridPos = getMouseGridPos(
       state.mousePos,
       state.zoom.value,

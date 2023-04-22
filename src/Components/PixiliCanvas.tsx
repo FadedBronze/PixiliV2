@@ -7,34 +7,15 @@ import { useBrushState } from "../brushes/useBrushState";
 import { brushes } from "../brushes/brushes";
 import { roundToNearestPow } from "../helpers/roundToNearestPower";
 
-export const getMouseGridPos = (
-  mousePos: Vector2,
-  zoom: number,
-  viewportPos: Vector2
-) => {
-  const pixelSize = zoom * 100;
-
-  return {
-    x: Math.round(
-      (mousePos.x - (mousePos.x % pixelSize)) / pixelSize - viewportPos.x
-    ),
-    y: Math.round(
-      (mousePos.y - (mousePos.y % pixelSize)) / pixelSize - viewportPos.y
-    ),
-  };
-};
-
-export function PixiliCanvas(props: {}) {
+export function PixiliCanvas() {
   const appState = useContext(AppStateContext);
   const [width, height] = useWindowSize();
 
   const canvasSize = { x: width, y: height };
 
-  useEffect(() => {
-    render();
-  }, [width]);
+  useEffect(() => render(), [width]);
 
-  const getMousePos = (e: MouseEvent) => {
+  const getMousePosFromCanvasEvent = (e: MouseEvent) => {
     const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
 
     return {
@@ -80,12 +61,12 @@ export function PixiliCanvas(props: {}) {
   ) => {
     const pixelSize = zoom * 100;
 
-    ctx.strokeStyle = "grey";
+    ctx.strokeStyle = "rgba(125, 125, 125, 0.5)";
     ctx.lineWidth = 0.5;
 
     const pixelsOnScreen = Math.floor(width / pixelSize);
 
-    const pixelsInChunkGrid = roundToNearestPow(pixelsOnScreen / 8, 8);
+    const pixelsInChunkGrid = roundToNearestPow(pixelsOnScreen / 8, 4);
 
     for (let i = 0; i < width; i += pixelSize * pixelsInChunkGrid) {
       ctx.beginPath();
@@ -167,6 +148,7 @@ export function PixiliCanvas(props: {}) {
           return;
         }
 
+        //gets the unrounded value of the mousePosition in pixel coordinates
         const getRawMouseGridPos = (mousePos: Vector2) => {
           const pixelSize = appState.zoom.value * 100;
 
@@ -176,7 +158,12 @@ export function PixiliCanvas(props: {}) {
           };
         };
 
+        //finds the difference between the old raw
+        //mouse grid position and new mouse grid position
+        //and adds the difference to the viewport position
+
         if (!canvasRef.current) return;
+
         const zoomDelta = e.deltaY * 0.0001;
         const oldMouseGridPos = getRawMouseGridPos(appState.mousePos);
         appState.zoom.value = Math.min(
@@ -222,7 +209,7 @@ export function PixiliCanvas(props: {}) {
       height={canvasSize.y}
       ref={canvasRef}
       onMouseMove={(e: MouseEvent) => {
-        appState.mousePos = getMousePos(e);
+        appState.mousePos = getMousePosFromCanvasEvent(e);
         brushes()[brushState.get().current].hold?.({
           state: appState,
           brushState: brushState.get(),

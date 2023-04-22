@@ -1,5 +1,5 @@
-import { getMouseGridPos } from "../Components/PixiliCanvas";
-import fillRect from "../helpers/fillRect";
+import { fillRect } from "../helpers/fillMethods";
+import { getMouseGridPos } from "../helpers/getMouseGridPos";
 import { Brush } from "./brushes";
 
 export type eraserBrushState = {

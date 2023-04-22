@@ -1,4 +1,3 @@
-import { State } from "@hookstate/core";
 import { AppState } from "../AppState";
 import { eraserBrush } from "./eraserBrush";
 import { fillBrush } from "./fillBrush";
