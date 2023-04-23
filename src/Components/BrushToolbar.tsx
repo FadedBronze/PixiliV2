@@ -9,7 +9,7 @@ export function BrushToolbar(props: {
   const getState = brushState.get();
 
   return (
-    <div className="p-2 h-fit min-h-48 gap-2 w-48 grid grid-cols-3 flex-wrap items-start bg-slate-500 z-0 overflow-y-scroll overflow-x-hidden">
+    <div className="m-2 bg-white rounded-md bg-opacity-10 p-2 h-fit min-h-48 gap-2 w-48 grid grid-cols-3 flex-wrap items-start z-0 overflow-y-scroll overflow-x-hidden">
       {Object.keys(getState.brushes).map((brush) => {
         return (
           <BrushToolbarBrush
@@ -39,8 +39,8 @@ function BrushToolbarBrush(props: {
   return (
     <button
       onClick={() => props.select()}
-      className={`bg-slate-300 rounded-md flex justify-center items-center w-12 h-12 ${
-        props.selected ? "border-4 border-slate-100" : ""
+      className={`bg-slate-300 bg-opacity-30 text-white rounded-md flex justify-center items-center w-12 h-12 ${
+        props.selected ? "bg-opacity-50" : ""
       }`}
     >
       {props.name}

@@ -21,8 +21,8 @@ export function ColorPalette() {
   };
 
   return (
-    <div className=" bg-slate-500">
-      <div className="w-full flex justify-center items-center aspect-square border-b border-white">
+    <div className="bg-white bg-opacity-10 rounded-md m-2">
+      <div className="w-full flex justify-center items-center aspect-square">
         <input
           className=""
           type="color"
@@ -32,7 +32,7 @@ export function ColorPalette() {
           }}
         />
       </div>
-      <div className="flex border-b border-white p-2 flex-wrap">
+      <div className="flex flex-wrap p-2">
         {colors.map((color) => (
           <ColorOption
             selected={selectedColor === color}
@@ -46,7 +46,7 @@ export function ColorPalette() {
           />
         ))}
         <button
-          className="w-1/4 aspect-square bg-slate-500 text-white"
+          className="w-1/4 aspect-square text-white"
           onClick={() => {
             addColor(appState.color.value);
           }}
@@ -67,7 +67,7 @@ function ColorOption(props: {
 }) {
   return (
     <button
-      className={`w-1/4 aspect-square ${
+      className={`w-1/4 aspect-square rounded-md ${
         props.selected ? "border-2 border-white" : ""
       }`}
       onClick={() => {
@@ -76,9 +76,15 @@ function ColorOption(props: {
         props.select();
         props.setColor();
       }}
-      style={{
-        backgroundColor: props.color,
-      }}
-    ></button>
+    >
+      <div
+        className={`w-full h-full rounded-md ${
+          props.selected ? "border-2 border-black" : ""
+        }`}
+        style={{
+          backgroundColor: props.color,
+        }}
+      ></div>
+    </button>
   );
 }
