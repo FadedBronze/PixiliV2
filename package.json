@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^16.2.0",
     "@hookstate/core": "^4.0.1",
     "lodash": "^4.17.21",
     "react": "^18.2.0",

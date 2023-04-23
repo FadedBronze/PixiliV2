@@ -1,6 +1,12 @@
 import { useContext } from "react";
 import { UILayer, useLayerState } from "../useLayerState";
 import { AppStateContext } from "../AppState";
+import {
+  Droppable,
+  DragDropContext,
+  Draggable,
+  DraggableProvided,
+} from "@hello-pangea/dnd";
 
 export default function LayerViewer() {
   const layerState = useLayerState();
@@ -8,60 +14,100 @@ export default function LayerViewer() {
   const appState = useContext(AppStateContext);
 
   return (
-    <div className="h-96">
-      {layerStateVal.layers.map((layer) => (
-        <Layer
-          select={() => {
-            appState.editingLayerName.value = layer.name;
+    <DragDropContext
+      onDragEnd={(result) => {
+        layerState.set((oldState) => {
+          if (result.destination === null) return oldState;
 
-            layerState.set((oldState) => {
-              const newState = { ...oldState };
+          const newState = { ...oldState };
 
-              newState.editingLayerName = layer.name;
-              return newState;
-            });
-          }}
-          selected={layerStateVal.editingLayerName === layer.name}
-          setName={(name) => {
-            appState.frame.find(({ name }) => name === layer.name)!.name = name;
+          const [reorderedItem] = newState.layers.splice(
+            result.source.index,
+            1
+          );
+          newState.layers.splice(result.destination.index, 0, reorderedItem);
 
-            layerState.set((oldState) => {
-              const newState = { ...oldState };
-              const currentLayer = newState.layers.find(
-                ({ name }) => name === layer.name
-              )!;
+          const [reorderedItem2] = appState.frame.splice(
+            result.source.index,
+            1
+          );
+          appState.frame.splice(result.destination.index, 0, reorderedItem2);
 
-              currentLayer.name = name;
-              return newState;
-            });
-          }}
-          setVisibility={(visibility) => {
-            layerState.set((oldState) => {
-              const newState = { ...oldState };
-              const currentLayer = newState.layers.find(
-                ({ name }) => name === layer.name
-              )!;
+          return newState;
+        });
+      }}
+    >
+      <Droppable droppableId="layers">
+        {(provided) => (
+          <div
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+            className="h-96 w-full"
+          >
+            {[...layerStateVal.layers].reverse().map((layer, i) => (
+              <Draggable key={layer.name} index={i} draggableId={layer.name}>
+                {(provided) => (
+                  <Layer
+                    provided={provided}
+                    select={() => {
+                      appState.editingLayerName.value = layer.name;
 
-              currentLayer.visible = visibility;
-              return newState;
-            });
-          }}
-          setOpacity={(opacity) => {
-            layerState.set((oldState) => {
-              const newState = { ...oldState };
-              const currentLayer = newState.layers.find(
-                ({ name }) => name === layer.name
-              )!;
+                      layerState.set((oldState) => {
+                        const newState = { ...oldState };
 
-              currentLayer.opacity = opacity;
-              return newState;
-            });
-          }}
-          key={layer.name}
-          layer={layer}
-        ></Layer>
-      ))}
-    </div>
+                        newState.editingLayerName = layer.name;
+                        return newState;
+                      });
+                    }}
+                    selected={layerStateVal.editingLayerName === layer.name}
+                    setName={(name) => {
+                      appState.frame.find(
+                        ({ name }) => name === layer.name
+                      )!.name = name;
+
+                      layerState.set((oldState) => {
+                        const newState = { ...oldState };
+                        const currentLayer = newState.layers.find(
+                          ({ name }) => name === layer.name
+                        )!;
+
+                        currentLayer.name = name;
+                        return newState;
+                      });
+                    }}
+                    setVisibility={(visibility) => {
+                      layerState.set((oldState) => {
+                        const newState = { ...oldState };
+                        const currentLayer = newState.layers.find(
+                          ({ name }) => name === layer.name
+                        )!;
+
+                        currentLayer.visible = visibility;
+                        return newState;
+                      });
+                    }}
+                    setOpacity={(opacity) => {
+                      layerState.set((oldState) => {
+                        const newState = { ...oldState };
+                        const currentLayer = newState.layers.find(
+                          ({ name }) => name === layer.name
+                        )!;
+
+                        currentLayer.opacity = opacity;
+                        return newState;
+                      });
+                    }}
+                    key={layer.name}
+                    layer={layer}
+                  ></Layer>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 }
 
@@ -72,17 +118,26 @@ function Layer(props: {
   setOpacity: (state: number) => void;
   setVisibility: (state: boolean) => void;
   setName: (state: string) => void;
+  provided: DraggableProvided;
 }) {
-  const { layer, setName, setOpacity, setVisibility, selected, select } = props;
+  const {
+    layer,
+    setName,
+    setOpacity,
+    setVisibility,
+    selected,
+    select,
+    provided,
+  } = props;
   return (
     <div
+      {...provided.dragHandleProps}
+      {...provided.draggableProps}
+      ref={provided.innerRef}
       className={`p-2 bg-white bg-opacity-10 rounded-md m-2 ${
         selected ? "bg-opacity-20 border border-white border-opacity-40" : ""
       }`}
-      style={{
-        backdropFilter: "blur(10px)",
-      }}
-      onClick={() => select()}
+      onClick={select}
     >
       <div className="flex justify-between">
         <input
