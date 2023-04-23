@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 import { UILayer, useLayerState } from "../useLayerState";
 import { AppStateContext } from "../AppState";
 import {
@@ -61,6 +61,11 @@ export default function LayerViewer() {
                     }}
                     selected={layerStateVal.editingLayerName === layer.name}
                     setName={(name) => {
+                      if (name === "") return;
+
+                      if (appState.frame.some((layer) => layer.name === name))
+                        return;
+
                       appState.frame.find(
                         ({ name }) => name === layer.name
                       )!.name = name;
@@ -72,6 +77,11 @@ export default function LayerViewer() {
                         )!;
 
                         currentLayer.name = name;
+
+                        if (layerStateVal.editingLayerName === layer.name) {
+                          appState.editingLayerName.value = name;
+                          newState.editingLayerName = name;
+                        }
                         return newState;
                       });
                     }}
@@ -120,6 +130,8 @@ function Layer(props: {
   setName: (state: string) => void;
   provided: DraggableProvided;
 }) {
+  const layerNameInputRef = useRef<HTMLInputElement>(null);
+
   const {
     layer,
     setName,
@@ -137,14 +149,30 @@ function Layer(props: {
       className={`p-2 bg-white bg-opacity-10 rounded-md m-2 ${
         selected ? "bg-opacity-20 border border-white border-opacity-40" : ""
       }`}
-      onClick={select}
+      onClick={() => select()}
     >
       <div className="flex justify-between">
         <input
           className="w-24 bg-transparent outline-none"
           type="text"
-          value={layer.name}
-          onChange={(e) => setName(e.currentTarget.value)}
+          defaultValue={layer.name}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              if (layerNameInputRef.current === null) return;
+
+              setName(layerNameInputRef.current.value ?? layer.name);
+
+              layerNameInputRef.current.value = layer.name;
+            }
+          }}
+          onMouseOut={() => {
+            if (layerNameInputRef.current === null) return;
+
+            setName(layerNameInputRef.current?.value ?? layer.name);
+
+            layerNameInputRef.current.value = layer.name;
+          }}
+          ref={layerNameInputRef}
         />
         <input
           type="checkbox"
