@@ -68,9 +68,13 @@ export default function LayerViewer() {
                         if (appState.frame.some((layer) => layer.name === name))
                           return;
 
-                        appState.frame.find(
+                        const layerWithName = appState.frame.find(
                           ({ name }) => name === layer.name
-                        )!.name = name;
+                        );
+
+                        if (layerWithName === undefined) return;
+
+                        layerWithName.name = name;
 
                         layerState.set((oldState) => {
                           const newState = { ...oldState };
@@ -149,7 +153,7 @@ function Layer(props: {
       {...provided.dragHandleProps}
       {...provided.draggableProps}
       ref={provided.innerRef}
-      className={`p-2 bg-white bg-opacity-10 rounded-md m-2 ${
+      className={`p-2 bg-white bg-opacity-10 rounded-md m-2 mt-0 ${
         selected ? "bg-opacity-20 border border-white border-opacity-40" : ""
       }`}
       onClick={() => select()}
@@ -198,7 +202,7 @@ function LayerMenu() {
   const appState = useContext(AppStateContext);
 
   return (
-    <div className="mx-2 bg-white bg-opacity-10 rounded-md">
+    <div className="mx-2 mb-2 bg-white bg-opacity-10 rounded-md">
       <LayerMenuButton
         onClick={(e: MouseEvent) => {
           layerState.set((oldState) => {
@@ -208,7 +212,7 @@ function LayerMenu() {
 
             while (true) {
               if (
-                !oldState.layers.find(
+                !newState.layers.find(
                   (layer) => layer.name === `layer ${layerNumber}`
                 )
               ) {
@@ -218,13 +222,13 @@ function LayerMenu() {
               layerNumber++;
             }
 
-            oldState.layers.push({
+            newState.layers.unshift({
               name: `layer ${layerNumber}`,
               opacity: 1,
               visible: true,
             });
 
-            appState.frame.push({
+            appState.frame.unshift({
               name: `layer ${layerNumber}`,
               pixels: new Map(),
               pixelsHistory: [],

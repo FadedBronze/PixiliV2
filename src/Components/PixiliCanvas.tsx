@@ -289,6 +289,7 @@ export function PixiliCanvas() {
         });
       }}
       onMouseDown={() => {
+        console.log(editingLayer);
         editingLayer.pixelsHistory.unshift(new Map(editingLayer.pixels));
         appState.mouseDown = true;
 
