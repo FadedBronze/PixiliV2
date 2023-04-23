@@ -39,7 +39,7 @@ function BrushToolbarBrush(props: {
   return (
     <button
       onClick={() => props.select()}
-      className={`bg-slate-300 bg-opacity-30 text-white rounded-md flex justify-center items-center w-12 h-12 ${
+      className={`bg-slate-300 bg-opacity-30 text-white rounded-md flex justify-center items-center w-14 h-14 ${
         props.selected ? "bg-opacity-50" : ""
       }`}
     >

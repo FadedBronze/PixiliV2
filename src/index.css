@@ -9,3 +9,7 @@ body {
 #root {
   @apply w-screen h-screen;
 }
+
+*::-webkit-scrollbar {
+  display: none;
+}
