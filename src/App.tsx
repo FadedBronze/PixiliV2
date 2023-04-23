@@ -1,5 +1,6 @@
+import { render } from "react-dom";
 import { BrushToolbar } from "./Components/BrushToolbar";
-import { ColorPalette } from "./Components/ColorPallete";
+import { ColorPalette } from "./Components/ColorPalette";
 import LayerViewer from "./Components/LayerViewer";
 import { PixiliCanvas } from "./Components/PixiliCanvas";
 import { useBrushState } from "./brushes/useBrushState";

@@ -6,6 +6,8 @@ import { MouseEvent } from "react";
 import { useBrushState } from "../brushes/useBrushState";
 import { brushes } from "../brushes/brushes";
 import { roundToNearestPow } from "../helpers/roundToNearestPower";
+import { useLayerState } from "../useLayerState";
+import { changeHexOpacity } from "../helpers/changeHexOpacity";
 
 export function PixiliCanvas() {
   const appState = useContext(AppStateContext);
@@ -24,6 +26,8 @@ export function PixiliCanvas() {
     };
   };
 
+  const layerState = useLayerState();
+
   const renderFrame = (
     frame: Frame,
     viewportPos: Vector2,
@@ -32,23 +36,38 @@ export function PixiliCanvas() {
     viewPortSize: Vector2
   ) => {
     const pixelSize = zoom * 100;
+    const layerData = layerState.get();
 
     ctx.clearRect(0, 0, viewPortSize.x, viewPortSize.y);
 
     frame.forEach((layer) => {
+      if (
+        layerData.layers.find(({ name }) => name === layer.name)?.visible ===
+        false
+      )
+        return;
+
       for (const [position, color] of layer.pixels) {
         const gridPosition = {
           x: parseInt(position.split("_")[0], 10),
           y: parseInt(position.split("_")[1], 10),
         };
 
-        ctx.fillStyle = color;
+        const opacity = layerData.layers.find(
+          ({ name }) => name === layer.name
+        )?.opacity;
+
+        if (opacity === undefined) {
+          ctx.fillStyle = color;
+        } else {
+          ctx.fillStyle = changeHexOpacity(color, opacity * 100);
+        }
 
         ctx.fillRect(
           pixelSize * (gridPosition.x + viewportPos.x),
           pixelSize * (gridPosition.y + viewportPos.y),
-          pixelSize + 1,
-          pixelSize + 1
+          pixelSize,
+          pixelSize
         );
       }
     });
@@ -158,6 +177,8 @@ export function PixiliCanvas() {
 
   const brushState = useBrushState();
 
+  const editingLayer = appState.editingLayer;
+
   return (
     <canvas
       className="h-full w-full"
@@ -237,9 +258,10 @@ export function PixiliCanvas() {
         }
 
         if (e.code === "KeyZ" && e.ctrlKey) {
-          const layer = appState.editingLayer;
-          if (layer.pixelsHistory.length > 0) {
-            layer.pixels = layer.pixelsHistory.shift() as Layer["pixels"];
+          console.log(editingLayer.pixelsHistory.length);
+          if (editingLayer.pixelsHistory.length > 0) {
+            editingLayer.pixels =
+              editingLayer.pixelsHistory.shift() as Layer["pixels"];
           }
         }
 
@@ -248,6 +270,9 @@ export function PixiliCanvas() {
       width={canvasSize.x}
       height={canvasSize.y}
       ref={canvasRef}
+      onMouseEnter={() => {
+        canvasRef.current?.focus();
+      }}
       onMouseMove={(e: MouseEvent) => {
         appState.mousePos = getMousePosFromCanvasEvent(e);
         brushes()[brushState.get().current].hold?.({
@@ -264,9 +289,7 @@ export function PixiliCanvas() {
         });
       }}
       onMouseDown={() => {
-        appState.editingLayer.pixelsHistory.unshift(
-          new Map(appState.editingLayer.pixels)
-        );
+        editingLayer.pixelsHistory.unshift(new Map(editingLayer.pixels));
         appState.mouseDown = true;
 
         brushes()[brushState.get().current].down?.({

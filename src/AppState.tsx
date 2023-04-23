@@ -55,7 +55,7 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
         viewportPos: useBetterState({ x: 0, y: 0 }),
         mousePos: mousePosRef.current,
         editingLayerName: useBetterState("layer 1"),
-        color: useBetterState("red"),
+        color: useBetterState("#000000"),
         frame: frameRef.current,
         selection: new Map(),
         get brushLayer() {
