@@ -1,5 +1,6 @@
 import { BrushToolbar } from "./Components/BrushToolbar";
 import { ColorPalette } from "./Components/ColorPallete";
+import LayerViewer from "./Components/LayerViewer";
 import { PixiliCanvas } from "./Components/PixiliCanvas";
 import { useBrushState } from "./brushes/useBrushState";
 
@@ -41,6 +42,7 @@ function OverlayUI() {
             })
           }
         ></BrushToolbar>
+        <LayerViewer></LayerViewer>
       </div>
       <div className="fixed top-0 bottom-0 left-0 p-2"></div>
       <div className="fixed top-0 left-0 p-2">

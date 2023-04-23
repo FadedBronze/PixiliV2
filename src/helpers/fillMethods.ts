@@ -64,7 +64,6 @@ export const getPixelsRect = (params: {
   position: Vector2;
 }) => {
   const { scale, layer, position } = params;
-  console.log(params);
 
   const pixels = new Map();
 

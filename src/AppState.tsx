@@ -31,6 +31,11 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
       pixelsHistory: [],
     },
     {
+      name: "background",
+      pixels: new Map(),
+      pixelsHistory: [],
+    },
+    {
       name: "brush",
       pixels: new Map(),
       pixelsHistory: [],

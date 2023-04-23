@@ -9,7 +9,7 @@ export function BrushToolbar(props: {
   const getState = brushState.get();
 
   return (
-    <div className="p-2 h-fit max-h-48 gap-2 w-48 grid grid-cols-3 flex-wrap items-start bg-slate-500 z-0 overflow-y-scroll overflow-x-hidden">
+    <div className="p-2 h-fit min-h-48 gap-2 w-48 grid grid-cols-3 flex-wrap items-start bg-slate-500 z-0 overflow-y-scroll overflow-x-hidden">
       {Object.keys(getState.brushes).map((brush) => {
         return (
           <BrushToolbarBrush

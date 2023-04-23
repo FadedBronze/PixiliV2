@@ -33,8 +33,6 @@ export const selectionBrush: Brush = {
           position: state.selectionStart,
         });
 
-        console.log(state.selection);
-
         state.selectMode = "selected";
         break;
       case "selected":
