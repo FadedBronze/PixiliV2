@@ -4,6 +4,9 @@ import { ColorPalette } from "./Components/ColorPalette";
 import LayerViewer from "./Components/LayerViewer";
 import { PixiliCanvas } from "./Components/PixiliCanvas";
 import { useBrushState } from "./brushes/useBrushState";
+import { useContext } from "react";
+import { AppStateContext } from "./AppState";
+import { useLayerState } from "./useLayerState";
 
 export type Layer = {
   name: string;
@@ -47,8 +50,47 @@ function OverlayUI() {
       </div>
       <div className="fixed top-0 bottom-0 left-0 p-2"></div>
       <div className="fixed top-0 left-0 p-2">
+        <ProjectOptions></ProjectOptions>
+      </div>
+      <div className="fixed top-12 left-0 p-2">
         <PropertyViewer></PropertyViewer>
       </div>
+    </div>
+  );
+}
+
+function ProjectOptions() {
+  const appState = useContext(AppStateContext);
+  const layerState = useLayerState();
+
+  return (
+    <div className="bg-slate-500 rounded-md h-10">
+      <button className="m-1 p-1 rounded-md bg-green-300" onClick={() => {}}>
+        Save
+      </button>
+      <button
+        className="m-1 p-1 rounded-md bg-red-300"
+        onClick={() => {
+          if (!confirm("Delete all layers and data?")) return;
+
+          appState.frame.splice(0, appState.frame.length);
+          appState.frame.push({
+            name: "brush",
+            pixels: new Map(),
+            pixelsHistory: [],
+          });
+
+          layerState.set((oldState) => {
+            const newState = { ...oldState };
+
+            newState.layers = [];
+
+            return newState;
+          });
+        }}
+      >
+        Reset
+      </button>
     </div>
   );
 }
@@ -62,7 +104,7 @@ function PropertyViewer() {
   if (selectedBrush === undefined) return <></>;
 
   return (
-    <div className="p-2 flex gap-2 bg-slate-500 pointer-events-auto w-full h-full">
+    <div className="p-2 flex gap-2 bg-slate-500 rounded-md pointer-events-auto w-full h-full">
       {Object.keys(selectedBrush).map((value) => {
         return (
           selectedBrush && (
