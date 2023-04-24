@@ -1,4 +1,4 @@
-import { MouseEvent, useContext, useRef } from "react";
+import { MouseEvent, useContext, useRef, useState } from "react";
 import { UILayer, useLayerState } from "../useLayerState";
 import { AppStateContext } from "../AppState";
 import {
@@ -12,9 +12,15 @@ export default function LayerViewer() {
   const layerState = useLayerState();
   const layerStateVal = layerState.get();
   const appState = useContext(AppStateContext);
+  const [selected, setSelected] = useState<string[]>([]);
 
   return (
-    <>
+    <div
+      onMouseLeave={(e) => {
+        setSelected([]);
+      }}
+    >
+      <LayerMenu selected={selected}></LayerMenu>
       <DragDropContext
         onDragEnd={(result) => {
           layerState.set((oldState) => {
@@ -38,7 +44,6 @@ export default function LayerViewer() {
           });
         }}
       >
-        <LayerMenu></LayerMenu>
         <Droppable droppableId="layers">
           {(provided) => (
             <div
@@ -51,7 +56,32 @@ export default function LayerViewer() {
                   {(provided) => (
                     <Layer
                       provided={provided}
-                      select={() => {
+                      selected={
+                        selected.find((name) => name === layer.name) !==
+                        undefined
+                      }
+                      select={(deselect: boolean) => {
+                        if (deselect) {
+                          setSelected((oldState) => {
+                            return oldState.filter(
+                              (name) => name !== layer.name
+                            );
+                          });
+
+                          return;
+                        }
+
+                        if (!selected.some((name) => name === layer.name)) {
+                          setSelected((oldState) => {
+                            const newState = [...oldState];
+
+                            newState.push(layer.name);
+
+                            return newState;
+                          });
+                        }
+                      }}
+                      selectAsCurrent={() => {
                         appState.editingLayerName.value = layer.name;
 
                         layerState.set((oldState) => {
@@ -61,7 +91,9 @@ export default function LayerViewer() {
                           return newState;
                         });
                       }}
-                      selected={layerStateVal.editingLayerName === layer.name}
+                      selectedAsCurrent={
+                        layerStateVal.editingLayerName === layer.name
+                      }
                       setName={(name) => {
                         if (name === "") return;
 
@@ -124,18 +156,20 @@ export default function LayerViewer() {
           )}
         </Droppable>
       </DragDropContext>
-    </>
+    </div>
   );
 }
 
 function Layer(props: {
-  select: () => void;
+  selectAsCurrent: () => void;
   layer: UILayer;
-  selected: boolean;
+  selectedAsCurrent: boolean;
   setOpacity: (state: number) => void;
   setVisibility: (state: boolean) => void;
   setName: (state: string) => void;
   provided: DraggableProvided;
+  select: (deselect: boolean) => void;
+  selected: boolean;
 }) {
   const layerNameInputRef = useRef<HTMLInputElement>(null);
 
@@ -144,19 +178,28 @@ function Layer(props: {
     setName,
     setOpacity,
     setVisibility,
-    selected,
-    select,
+    selectedAsCurrent,
+    selectAsCurrent,
     provided,
+    select,
+    selected,
   } = props;
+
   return (
     <div
       {...provided.dragHandleProps}
       {...provided.draggableProps}
       ref={provided.innerRef}
-      className={`p-2 bg-white bg-opacity-10 rounded-md m-2 mt-0 ${
-        selected ? "bg-opacity-20 border border-white border-opacity-40" : ""
-      }`}
-      onClick={() => select()}
+      className={`p-2 bg-white bg-opacity-10 rounded-md outline-none m-2 mt-0 ${
+        selectedAsCurrent ? "bg-opacity-20   " : ""
+      } ${selected ? "border-white border border-opacity-40" : ""}`}
+      onClick={(e) => {
+        if (e.shiftKey) {
+          select(selected);
+          return;
+        }
+        selectAsCurrent();
+      }}
     >
       <div className="flex justify-between">
         <input
@@ -197,7 +240,8 @@ function Layer(props: {
   );
 }
 
-function LayerMenu() {
+function LayerMenu(props: { selected: string[] }) {
+  const { selected } = props;
   const layerState = useLayerState();
   const appState = useContext(AppStateContext);
 
@@ -240,7 +284,38 @@ function LayerMenu() {
       >
         +
       </LayerMenuButton>
-      <LayerMenuButton onClick={(e: MouseEvent) => {}}>✕</LayerMenuButton>
+      <LayerMenuButton
+        onClick={(e: MouseEvent) => {
+          layerState.set((oldState) => {
+            const newState = { ...oldState };
+
+            newState.layers = newState.layers.filter(
+              ({ name }) => !selected.includes(name)
+            );
+
+            for (let i = appState.frame.length - 1; i >= 0; i--) {
+              const layer = appState.frame[i];
+              if (selected.includes(layer.name)) {
+                appState.frame.splice(i, 1);
+              }
+            }
+
+            if (
+              !appState.frame.some(
+                ({ name }) => name === appState.editingLayerName.value
+              )
+            ) {
+              appState.editingLayerName.value = appState.frame[0].name;
+              newState.editingLayerName = appState.frame[0].name;
+            }
+
+            return newState;
+          });
+          selected;
+        }}
+      >
+        ✕
+      </LayerMenuButton>
     </div>
   );
 }

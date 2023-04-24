@@ -258,7 +258,6 @@ export function PixiliCanvas() {
         }
 
         if (e.code === "KeyZ" && e.ctrlKey) {
-          console.log(editingLayer.pixelsHistory.length);
           if (editingLayer.pixelsHistory.length > 0) {
             editingLayer.pixels =
               editingLayer.pixelsHistory.shift() as Layer["pixels"];
@@ -289,7 +288,6 @@ export function PixiliCanvas() {
         });
       }}
       onMouseDown={() => {
-        console.log(editingLayer);
         editingLayer.pixelsHistory.unshift(new Map(editingLayer.pixels));
         appState.mouseDown = true;
 
