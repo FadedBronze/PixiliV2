@@ -3,12 +3,14 @@ import { pixelBrushState } from "./pixelBrush";
 import { eraserBrushState } from "./eraserBrush";
 import { selectionState } from "./selectionBrush";
 import { fillState } from "./fillBrush";
+import { lineState } from "./lineBrush";
 
 type Brushes = {
   pixel: pixelBrushState;
   eraser: eraserBrushState;
   fill: fillState;
   select: selectionState;
+  line: lineState;
 };
 
 export type BrushState = {
@@ -20,7 +22,6 @@ const brushState = hookstate<BrushState>({
   current: "pixel",
   brushes: {
     pixel: {
-      pixelPerfect: false,
       scale: 1,
     },
     eraser: {
@@ -28,6 +29,7 @@ const brushState = hookstate<BrushState>({
     },
     fill: undefined,
     select: undefined,
+    line: undefined,
   },
 });
 

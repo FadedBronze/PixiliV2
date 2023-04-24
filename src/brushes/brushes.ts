@@ -4,6 +4,7 @@ import { fillBrush } from "./fillBrush";
 import { pixelBrush } from "./pixelBrush";
 import { BrushState } from "./useBrushState";
 import { selectionBrush } from "./selectionBrush";
+import { lineBrush } from "./lineBrush";
 
 type BrushDrawParams = {
   state: AppState;
@@ -23,5 +24,6 @@ export function brushes() {
     fill: fillBrush,
     pixel: pixelBrush,
     select: selectionBrush,
+    line: lineBrush,
   };
 }

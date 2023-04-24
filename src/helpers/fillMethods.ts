@@ -22,6 +22,40 @@ export const fillRect = (params: {
   }
 };
 
+export const fillLine = (
+  a: Vector2,
+  b: Vector2,
+  color: string,
+  layer: Layer
+) => {
+  // const distance = {
+  //   x: a.x - b.x,
+  //   y: a.y - b.y,
+  // };
+
+  const LinearInterpolation = (a: number, b: number, t: number) => {
+    return a + (b - a) * t;
+  };
+
+  for (const _i of _.range(0, 100)) {
+    const i = _i / 100;
+
+    const positionOnLine = {
+      x: Math.round(LinearInterpolation(a.x, b.x, i)),
+      y: Math.round(LinearInterpolation(a.y, b.y, i)),
+    };
+
+    fillPixel({
+      layer: layer,
+      color: color,
+      position: {
+        x: positionOnLine.x,
+        y: positionOnLine.y,
+      },
+    });
+  }
+};
+
 export const fillPixel = (params: {
   layer: Layer;
   position: Vector2;

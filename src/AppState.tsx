@@ -15,6 +15,8 @@ export type AppState = {
   brushLayer: Layer;
   selection: Map<string, string>;
   selectMode: "selecting" | "selected" | "not selecting";
+  lineStart: Vector2;
+  drawingLine: boolean;
   selectionStart: Vector2;
 };
 
@@ -43,10 +45,14 @@ export function AppStateContextProvider(props: { children: JSX.Element }) {
   ]);
   const selectionStartRef = useRef({ x: 0, y: 0 });
   const selectModeRef = useRef<AppState["selectMode"]>("not selecting");
+  const lineStartRef = useRef({ x: 0, y: 0 });
+  const drawingLine = useRef(false);
 
   return (
     <AppStateContext.Provider
       value={{
+        drawingLine: drawingLine.current,
+        lineStart: lineStartRef.current,
         selectMode: selectModeRef.current,
         selectionStart: selectionStartRef.current,
         backgroundColor: useBetterState("rgb(30, 30, 30)"),

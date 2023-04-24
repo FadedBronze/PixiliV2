@@ -3,7 +3,6 @@ import { getMouseGridPos } from "../helpers/getMouseGridPos";
 import { Brush } from "./brushes";
 
 export type pixelBrushState = {
-  pixelPerfect: boolean;
   scale: number;
 };
 
