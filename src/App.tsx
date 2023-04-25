@@ -4,9 +4,10 @@ import { ColorPalette } from "./Components/ColorPalette";
 import LayerViewer from "./Components/LayerViewer";
 import { PixiliCanvas } from "./Components/PixiliCanvas";
 import { useBrushState } from "./brushes/useBrushState";
-import { useContext } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { AppStateContext } from "./AppState";
-import { useLayerState } from "./useLayerState";
+import { UILayer, useLayerState } from "./useLayerState";
+import React from "react";
 
 export type Layer = {
   name: string;
@@ -19,6 +20,19 @@ export type Vector2 = {
   x: number;
   y: number;
 };
+
+type exportData = {
+  name: string;
+  opacity: number;
+  visible: boolean;
+  pixels: {
+    position: {
+      x: number;
+      y: number;
+    };
+    color: string;
+  }[];
+}[];
 
 function App() {
   return (
@@ -59,34 +73,199 @@ function OverlayUI() {
   );
 }
 
+function Downloader(props: {
+  buttonProps: React.HTMLProps<HTMLButtonElement>;
+  fileName: string;
+  onClick: () => string;
+}) {
+  const downloadTxtFile = (value: string) => {
+    const element = document.createElement("a");
+    const file = new Blob([value], {
+      type: "text/plain;charset=utf-8",
+    });
+    element.href = URL.createObjectURL(file);
+    element.download = props.fileName;
+    document.body.appendChild(element);
+    element.click();
+  };
+
+  return (
+    <button
+      {...props.buttonProps}
+      type="button"
+      onClick={() => {
+        downloadTxtFile(props.onClick());
+      }}
+    >
+      Download
+    </button>
+  );
+}
+
 function ProjectOptions() {
   const appState = useContext(AppStateContext);
   const layerState = useLayerState();
+  const [name, setName] = useState("untitled.pixili");
+
+  const prepareDataForExport = () => {
+    const exports = [...appState.frame];
+    const layerStateValue = layerState.get();
+
+    const exportsArray: exportData = exports
+      .filter(({ name }) => name !== "brush")
+      .map((layer) => {
+        const exportValue = [];
+        const UILayer = layerStateValue.layers.find(
+          ({ name }) => name === layer.name
+        )!;
+
+        for (const [position, color] of layer.pixels) {
+          exportValue.push({
+            position: {
+              x: parseInt(position.split("_")[0], 10),
+              y: parseInt(position.split("_")[1], 10),
+            },
+            color,
+          });
+        }
+
+        return {
+          name: layer.name,
+          pixels: exportValue,
+          opacity: UILayer.opacity,
+          visible: UILayer.visible,
+        };
+      });
+
+    return exportsArray;
+  };
+
+  const clear = () => {
+    appState.frame.splice(0, appState.frame.length);
+    appState.frame.push({
+      name: "brush",
+      pixels: new Map(),
+      pixelsHistory: [],
+    });
+
+    layerState.set((oldState) => {
+      const newState = { ...oldState };
+
+      newState.layers = [];
+
+      return newState;
+    });
+  };
+
+  const getFile = () => {
+    return new Promise<{ name: string; data: string | null | ArrayBuffer }>(
+      (resolve, reject) => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.addEventListener("change", () => {
+          if (input.files === null) return;
+          const file = input.files[0];
+          const reader = new FileReader();
+          reader.addEventListener("load", () => {
+            resolve({ name: file.name, data: reader.result });
+          });
+          reader.addEventListener("error", () => {
+            reject(new Error("Error reading file."));
+          });
+          reader.readAsText(file);
+        });
+        input.click();
+      }
+    );
+  };
 
   return (
     <div className="bg-slate-500 rounded-md h-10">
-      <button className="m-1 p-1 rounded-md bg-green-300" onClick={() => {}}>
-        Save
+      <input
+        className="rounded-md m-1 p-1"
+        type="text"
+        onChange={(e) => {
+          if (e.currentTarget.value === "") {
+            setName(`untitled.pixili`);
+          } else {
+            setName(`${e.currentTarget?.value ?? "untitled"}.pixili`);
+          }
+        }}
+      />
+      <Downloader
+        fileName={name}
+        onClick={() => JSON.stringify(prepareDataForExport())}
+        buttonProps={{
+          className: "m-1 p-1 rounded-md bg-green-300",
+        }}
+      ></Downloader>
+      <button
+        className="m-1 p-1 rounded-md bg-orange-300"
+        onClick={() => {
+          if (!confirm("Importing will delete all existing layers")) return;
+          clear();
+
+          getFile()
+            .then((value) => {
+              if (typeof value.data === "string") {
+                const parsedValue = JSON.parse(value.data) as exportData;
+
+                return { data: parsedValue, name: value.name };
+              } else {
+                throw new Error("payload is not a string");
+              }
+            })
+            .then((value) => {
+              const frame: Frame = [];
+              const uiLayers: UILayer[] = [];
+
+              for (const layer of value.data) {
+                const pixels = new Map();
+
+                for (const pixel of layer.pixels) {
+                  pixels.set(
+                    `${pixel.position.x}_${pixel.position.y}`,
+                    pixel.color
+                  );
+                }
+
+                uiLayers.push({
+                  name: layer.name,
+                  opacity: layer.opacity,
+                  visible: layer.visible,
+                });
+
+                frame.push({
+                  name: layer.name,
+                  pixels: pixels,
+                  pixelsHistory: [],
+                });
+              }
+
+              return { frame, uiLayers };
+            })
+            .then(({ frame, uiLayers }) => {
+              frame.forEach((layer) => {
+                appState.frame.push(layer);
+              });
+
+              layerState.set((oldState) => {
+                const newState = { ...oldState };
+
+                newState.layers = uiLayers;
+
+                return newState;
+              });
+            });
+        }}
+      >
+        Import
       </button>
       <button
         className="m-1 p-1 rounded-md bg-red-300"
         onClick={() => {
           if (!confirm("Delete all layers and data?")) return;
-
-          appState.frame.splice(0, appState.frame.length);
-          appState.frame.push({
-            name: "brush",
-            pixels: new Map(),
-            pixelsHistory: [],
-          });
-
-          layerState.set((oldState) => {
-            const newState = { ...oldState };
-
-            newState.layers = [];
-
-            return newState;
-          });
+          clear();
         }}
       >
         Reset
