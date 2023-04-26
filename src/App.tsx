@@ -2,12 +2,14 @@ import { render } from "react-dom";
 import { BrushToolbar } from "./Components/BrushToolbar";
 import { ColorPalette } from "./Components/ColorPalette";
 import LayerViewer from "./Components/LayerViewer";
-import { PixiliCanvas } from "./Components/PixiliCanvas";
+import { PixiliCanvas, renderFrame } from "./Components/PixiliCanvas";
 import { useBrushState } from "./brushes/useBrushState";
 import { useContext, useEffect, useRef, useState } from "react";
 import { AppStateContext } from "./AppState";
 import { UILayer, useLayerState } from "./useLayerState";
 import React from "react";
+import useWindowSize from "./hooks/useWindowSize";
+import mergeLayers from "./helpers/mergeLayers";
 
 export type Layer = {
   name: string;
@@ -102,13 +104,63 @@ function Downloader(props: {
   );
 }
 
+function download(canvas: HTMLCanvasElement, filename: string) {
+  /// create an "off-screen" anchor tag
+  var lnk = document.createElement("a"),
+    e;
+
+  /// the key here is to set the download attribute of the a tag
+  lnk.download = filename;
+
+  /// convert canvas content to data-uri for link. When download
+  /// attribute is set the content pointed to by link will be
+  /// pushed as "download" in HTML5 capable browsers
+  lnk.href = canvas.toDataURL("image/png;base64");
+
+  lnk.click();
+}
+
+function PngDownloader(props: { onClick: () => exportData; name: string }) {
+  return (
+    <button
+      className="m-1 p-1 rounded-md bg-cyan-300"
+      onClick={() => {
+        const data = props.onClick()[0].pixels;
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 2000;
+        canvas.height = 2000;
+        const ctx = canvas.getContext("2d")!;
+
+        if (data.length < 1) {
+          alert("no image has been drawn");
+          return;
+        }
+
+        for (const pixel of data) {
+          ctx.fillStyle = pixel.color;
+          ctx.fillRect(
+            pixel.position.x * 5 + 1000,
+            pixel.position.y * 5 + 1000,
+            5,
+            5
+          );
+        }
+
+        download(canvas, props.name + ".png");
+      }}
+    >
+      Download png
+    </button>
+  );
+}
+
 function ProjectOptions() {
   const appState = useContext(AppStateContext);
   const layerState = useLayerState();
   const [name, setName] = useState("untitled.pixili");
 
-  const prepareDataForExport = () => {
-    const exports = [...appState.frame];
+  const prepareDataForExport = (exports: Layer[]) => {
     const layerStateValue = layerState.get();
 
     const exportsArray: exportData = exports
@@ -194,11 +246,15 @@ function ProjectOptions() {
       />
       <Downloader
         fileName={name}
-        onClick={() => JSON.stringify(prepareDataForExport())}
+        onClick={() => JSON.stringify(prepareDataForExport(appState.frame))}
         buttonProps={{
           className: "m-1 p-1 rounded-md bg-green-300",
         }}
       ></Downloader>
+      <PngDownloader
+        onClick={() => prepareDataForExport([mergeLayers(...appState.frame)])}
+        name={name}
+      ></PngDownloader>
       <button
         className="m-1 p-1 rounded-md bg-orange-300"
         onClick={() => {

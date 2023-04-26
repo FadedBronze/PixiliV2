@@ -7,6 +7,8 @@ import {
   Draggable,
   DraggableProvided,
 } from "@hello-pangea/dnd";
+import mergeLayers from "../helpers/mergeLayers";
+import { Layer } from "../App";
 
 export default function LayerViewer() {
   const layerState = useLayerState();
@@ -24,7 +26,8 @@ export default function LayerViewer() {
       <DragDropContext
         onDragEnd={(result) => {
           layerState.set((oldState) => {
-            if (result.destination === null) return oldState;
+            if (!result.destination) return oldState;
+            console.log(oldState);
 
             const newState = { ...oldState };
 
@@ -40,6 +43,8 @@ export default function LayerViewer() {
             );
             appState.frame.splice(result.destination.index, 0, reorderedItem2);
 
+            console.log(newState);
+
             return newState;
           });
         }}
@@ -51,7 +56,7 @@ export default function LayerViewer() {
               ref={provided.innerRef}
               className="h-fit max-h-48 overflow-y-scroll w-full"
             >
-              {[...layerStateVal.layers].reverse().map((layer, i) => (
+              {layerStateVal.layers.map((layer, i) => (
                 <Draggable key={layer.name} index={i} draggableId={layer.name}>
                   {(provided) => (
                     <Layer
@@ -315,6 +320,41 @@ function LayerMenu(props: { selected: string[] }) {
         }}
       >
         ✕
+      </LayerMenuButton>
+      <LayerMenuButton
+        onClick={() => {
+          const mergingLayers: Layer[] = [];
+
+          for (let i = appState.frame.length - 1; i >= 0; i--) {
+            const layer = appState.frame[i];
+            if (selected.includes(layer.name)) {
+              appState.frame.splice(i, 1);
+
+              layerState.set((oldState) => {
+                const newState = { ...oldState };
+                newState.layers.splice(i, 1);
+                return newState;
+              });
+              mergingLayers.push(layer);
+            }
+          }
+
+          appState.frame.push(mergeLayers(...mergingLayers));
+
+          layerState.set((oldState) => {
+            const newState = { ...oldState };
+
+            newState.layers.push({
+              name: mergingLayers[0].name,
+              opacity: 1,
+              visible: true,
+            });
+
+            return newState;
+          });
+        }}
+      >
+        M
       </LayerMenuButton>
     </div>
   );

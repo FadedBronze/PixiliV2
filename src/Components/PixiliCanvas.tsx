@@ -6,8 +6,54 @@ import { MouseEvent } from "react";
 import { useBrushState } from "../brushes/useBrushState";
 import { brushes } from "../brushes/brushes";
 import { roundToNearestPow } from "../helpers/roundToNearestPower";
-import { useLayerState } from "../useLayerState";
+import { LayerState, useLayerState } from "../useLayerState";
 import { changeHexOpacity } from "../helpers/changeHexOpacity";
+import { ImmutableObject } from "@hookstate/core";
+
+export const renderFrame = (
+  frame: Frame,
+  viewportPos: Vector2,
+  zoom: number,
+  ctx: CanvasRenderingContext2D,
+  viewPortSize: Vector2,
+  layerData: ImmutableObject<LayerState>
+) => {
+  const pixelSize = zoom * 100;
+
+  ctx.clearRect(0, 0, viewPortSize.x, viewPortSize.y);
+
+  frame.forEach((layer) => {
+    if (
+      layerData.layers.find(({ name }) => name === layer.name)?.visible ===
+      false
+    )
+      return;
+
+    for (const [position, color] of layer.pixels) {
+      const gridPosition = {
+        x: parseInt(position.split("_")[0], 10),
+        y: parseInt(position.split("_")[1], 10),
+      };
+
+      const opacity = layerData.layers.find(
+        ({ name }) => name === layer.name
+      )?.opacity;
+
+      if (opacity === undefined) {
+        ctx.fillStyle = color;
+      } else {
+        ctx.fillStyle = changeHexOpacity(color, opacity * 100);
+      }
+
+      ctx.fillRect(
+        pixelSize * (gridPosition.x + viewportPos.x),
+        pixelSize * (gridPosition.y + viewportPos.y),
+        pixelSize,
+        pixelSize
+      );
+    }
+  });
+};
 
 export function PixiliCanvas() {
   const appState = useContext(AppStateContext);
@@ -27,51 +73,6 @@ export function PixiliCanvas() {
   };
 
   const layerState = useLayerState();
-
-  const renderFrame = (
-    frame: Frame,
-    viewportPos: Vector2,
-    zoom: number,
-    ctx: CanvasRenderingContext2D,
-    viewPortSize: Vector2
-  ) => {
-    const pixelSize = zoom * 100;
-    const layerData = layerState.get();
-
-    ctx.clearRect(0, 0, viewPortSize.x, viewPortSize.y);
-
-    frame.forEach((layer) => {
-      if (
-        layerData.layers.find(({ name }) => name === layer.name)?.visible ===
-        false
-      )
-        return;
-
-      for (const [position, color] of layer.pixels) {
-        const gridPosition = {
-          x: parseInt(position.split("_")[0], 10),
-          y: parseInt(position.split("_")[1], 10),
-        };
-
-        const opacity = layerData.layers.find(
-          ({ name }) => name === layer.name
-        )?.opacity;
-
-        if (opacity === undefined) {
-          ctx.fillStyle = color;
-        } else {
-          ctx.fillStyle = changeHexOpacity(color, opacity * 100);
-        }
-
-        ctx.fillRect(
-          pixelSize * (gridPosition.x + viewportPos.x),
-          pixelSize * (gridPosition.y + viewportPos.y),
-          pixelSize,
-          pixelSize
-        );
-      }
-    });
-  };
 
   const gridLines = (
     zoom: number,
@@ -167,7 +168,8 @@ export function PixiliCanvas() {
       {
         x: canvasSize.x,
         y: canvasSize.y,
-      }
+      },
+      layerState.get()
     );
 
     gridLines(appState.zoom.value, ctx, appState.viewportPos.value);
